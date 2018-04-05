@@ -2,8 +2,8 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
 
-import { PrimitiveReaders } from '../../../src/readers/primitive-readers';
-import * as errors from '../../../src/errors/decoding/decoding-error';
+import { PrimitiveReaders } from 'readers/primitive-readers';
+import * as errors from 'errors/decoding/decoding-error';
 
 describe('BooleanReader', () => {
   const reader = new PrimitiveReaders.BooleanReader();

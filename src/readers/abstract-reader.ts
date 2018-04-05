@@ -1,5 +1,5 @@
 import { DecodingError } from 'errors/decoding/decoding-error';
-import { Result } from '../result/result';
+import { Result } from 'result/result';
 
 import { Reader } from './reader.interface';
 

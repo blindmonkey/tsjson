@@ -1,8 +1,7 @@
 // import * as mocha from "mocha";
 import * as chai from "chai";
 
-import * as errors from '../src/errors/decoding/decoding-error';
-import { Result } from '../src/result/result';
+import { Result } from 'result/result';
 
 function identity<T>(x: T): T { return x }
 function constant<T>(x: T): () => T { return () => x }
