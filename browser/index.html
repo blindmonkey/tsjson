@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <title>Test Web Page for TsJson</title>
+    <script type="text/javascript" src="dist/bundle.js"></script>
+  </head>
+  <body>
+    <style>
+      textarea {
+        width: 100%;
+        min-height: 20%;
+        margin-bottom: 2pt;
+      }
+      #json-schema-status {
+        background-color: pink;
+        border: 1px red;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      #json-schema-status.loaded {
+        background-color: lightgreen;
+      }
+    </style>
+    <h1>Test Web Page for TsJson</h1>
+    <h2>Enter TsJson Schema</h2>
+    <textarea id="ts-area">
+TsJson.obj()
+  .prop('testNumber', TsJson.number)
+  .prop('testString', TsJson.string)
+</textarea>
+    <br/>
+    <div id="json-schema-status">No TsJson schema set</div>
+    <button id="load-schema">Load JSON Schema</button>
+
+    <h2>Enter JSON</h2>
+    <textarea id="json-area"></textarea>
+    <br/>
+    <button id="process-json">Process JSON</button>
+
+    <script>
+      var jsonSchemaStatusDiv = document.getElementById('json-schema-status');
+      var LoadedSchema = null;
+      document.getElementById('load-schema').addEventListener('click', function() {
+        try {
+          var value = eval(document.getElementById('ts-area').value);
+        } catch (e) {
+          LoadedSchema = null;
+          jsonSchemaStatusDiv.classList.remove('loaded');
+          jsonSchemaStatusDiv.textContent = 'Error: ' + e;
+          return;
+        }
+        if (!(value.read && value.read.apply && value.read.call)) {
+          LoadedSchema = null;
+          jsonSchemaStatusDiv.classList.remove('loaded');
+          jsonSchemaStatusDiv.textContent = 'Error: Invalid TsJson schema';
+          return;
+        }
+        LoadedSchema = TsJson.obj()
+          .prop('json', value);
+        jsonSchemaStatusDiv.classList.add('loaded');
+        jsonSchemaStatusDiv.textContent = 'TsJson schema loaded'
+      });
+
+      document.getElementById('process-json').addEventListener('click', function() {
+        console.log(LoadedSchema.read({json: JSON.parse(document.getElementById('json-area').value)}).json);
+      });
+
+    </script>
+  </body>
+</html>
