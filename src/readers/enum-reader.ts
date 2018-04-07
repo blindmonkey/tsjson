@@ -3,7 +3,7 @@ import { Result } from 'result/result';
 
 import { AbstractReader } from './abstract-reader'
 import { Reader } from './reader.interface';
-import { Types } from './type-helper';
+import { Types } from '../jstypes';
 
 interface EnumNoMatchError {
   type: 'enum-no-match';
@@ -34,7 +34,9 @@ export class EmptyEnumReader implements EnumReaderInterface<never> {
   }
   read(obj: any): Result<never, errors.DecodingError|EnumNoMatchError> {
     if (typeof obj !== 'string') {
-      return Result.failure(errors.InvalidTypeError.create(obj, Types.StringType, Types.determineType(obj).name));
+      const inferred = Types.infer(obj);
+      const typeString = inferred && Types.toString(inferred) || 'Unknown';
+      return Result.failure(errors.InvalidTypeError.create(obj, Types.toString(Types.String), typeString));
     }
     return Result.failure(EnumNoMatchError.create([]));
   }
@@ -55,7 +57,9 @@ export class EnumValueReader<T extends string, Base extends string> implements E
   }
   read(obj: any): Result<T|Base, errors.DecodingError|EnumNoMatchError> {
     if (typeof obj !== 'string') {
-      return Result.failure(errors.InvalidTypeError.create(obj, Types.StringType, Types.determineType(obj).name));
+      const inferred = Types.infer(obj);
+      const typeString = inferred && Types.toString(inferred) || 'Unknown';
+      return Result.failure(errors.InvalidTypeError.create(obj, Types.toString(Types.String), typeString));
     }
     if (obj === this.value) {
       return Result.success(this.value);
@@ -70,12 +74,12 @@ export class EnumValueReader<T extends string, Base extends string> implements E
 }
 
 export class EnumReader<T extends string> extends AbstractReader<T> implements Reader<T> {
-  expectedType: string;
+  expectedType: Types.Type;
   private base: EnumReaderInterface<T>;
   constructor(base: EnumReaderInterface<T>) {
     super();
     this.base = base;
-    this.expectedType = base.expectedValues.map((v) => Types.quoteAndEscape('"', v)).join('|');
+    this.expectedType = Types.Enum(base.expectedValues);
   }
   case<S extends string>(s: S): EnumReader<T|S> {
     return new EnumReader(this.base.case(s));
@@ -83,7 +87,9 @@ export class EnumReader<T extends string> extends AbstractReader<T> implements R
   read(obj: any): Result<T, errors.DecodingError> {
     return this.base.read(obj).mapFailure((failure) => {
       if (failure.type === 'enum-no-match') {
-        return errors.InvalidTypeError.create(obj, this.expectedType, Types.determineType(obj).name + ' (' + obj + ')');
+        const inferred = Types.infer(obj);
+        const typeString = inferred && Types.toString(inferred) || 'Unknown';
+        return errors.InvalidTypeError.create(obj, Types.toString(this.expectedType), typeString);
       }
       return failure;
     });

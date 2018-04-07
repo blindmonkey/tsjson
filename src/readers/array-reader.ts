@@ -3,15 +3,15 @@ import { Result } from 'result/result';
 
 import { AbstractReader } from './abstract-reader';
 import { Reader } from './reader.interface';
-import { Types } from './type-helper';
+import { Types } from '../jstypes';
 
 export class ArrayReader<T> extends AbstractReader<T[]> implements Reader<T[]> {
-  expectedType: string;
+  expectedType: Types.ArrayType;
   private reader: Reader<T>;
   constructor(reader: Reader<T>) {
     super();
     this.reader = reader;
-    this.expectedType = Types.ArrayType + ' of ' + reader.expectedType;
+    this.expectedType = Types.Array(reader.expectedType);
   }
   read(obj: any): Result<T[], DecodingError> {
     if (obj && typeof obj.length === 'number') {
@@ -22,6 +22,8 @@ export class ArrayReader<T> extends AbstractReader<T[]> implements Reader<T[]> {
         .mapFailure((errors) => ErrorGroup.create(
           obj, errors.map((error) => ArrayChildError.create(error.index, error.error))));
     }
-    return Result.failure(InvalidTypeError.create(obj, this.expectedType, Types.determineType(obj).name));
+    const inferredType = Types.infer(obj);
+    const typeString = inferredType && Types.toString(inferredType) || 'Unknown';
+    return Result.failure(InvalidTypeError.create(obj, this.expectedType.toString(), typeString));
   }
 }

@@ -48,14 +48,16 @@ export interface InvalidTypeError {
   expected: string;
   actual: string;
   value: any;
+  error: DecodingError|null;
 }
 export namespace InvalidTypeError {
-  export function create(value: any, expected: string, actual: string): InvalidTypeError {
+  export function create(value: any, expected: string, actual: string, forwarded?: DecodingError): InvalidTypeError {
     return {
       type: 'invalid-type',
       expected: expected,
       actual: actual,
-      value: value
+      value: value,
+      error: forwarded || null
     };
   }
 }

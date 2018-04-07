@@ -1,4 +1,553 @@
+function unreachable(a: never): never {
+  return a;
+}
 
+function ObjectKeys(obj: Object) {
+  return Object.keys(obj);
+}
+
+// namespace Objects {
+//   export function merge<Value>(obj1: {[k: string]: Value}, obj2: {[k: string]: Value}): {[k: string]: Value} {
+//     const obj: {[k: string]: Value} = {};
+//     for (var key in obj1) {
+//       obj[key] = obj1[key];
+//     }
+//     for (var key in obj2) {
+//       obj[key] = obj2[key];
+//     }
+//     return obj;
+//   }
+// }
+
+interface Set<T> {
+  size(): number
+  add(value: T): boolean
+  remove(value: T): boolean
+  contains(value: T): boolean
+  toArray(): T[]
+  copy(): Set<T>
+  equals(other: Set<T>): boolean
+  // Iterable
+  all(f: (v: T) => boolean): boolean
+  forEach(f: (v: T) => boolean): void
+  map<Out>(f: (v: T) => Out): Set<Out>
+  // Set operations
+  union(other: Set<T>): Set<T>
+  intersection(other: Set<T>): Set<T>
+  subtract(other: Set<T>): Set<T>
+  isSubsetOf(other: Set<T>): boolean
+  isDisjoint(other: Set<T>): boolean
+}
+
+namespace Sets {
+  export function create<T>(array: T[]): Set<T> {
+    const set: Set<T> = new SetImpl();
+    array.forEach((v) => set.add(v))
+    return set;
+  }
+}
+
+class SetImpl<T> implements Set<T> {
+  private items: T[] = [];
+  private index: { [k: string]: { index: number, value: T } } = {};
+
+  private containsHash(hash: string): boolean {
+    return Object.hasOwnProperty.call(this.index, hash);
+  }
+
+  static create<T>(array: T[]): Set<T> {
+    const set: Set<T> = new Set();
+    array.forEach((v) => set.add(v))
+    return set;
+  }
+
+  size(): number {
+    return this.items.length;
+  }
+  toArray(): T[] {
+    return this.items.concat([]);
+  }
+
+  copy(): Set<T> {
+    return Sets.create(this.items);
+  }
+
+  forEach(f: (v: T) => boolean): void {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (!f(item)) {
+        return;
+      }
+    }
+  }
+
+  equals(other: Set<T>): boolean {
+    return other.size() == this.size() && this.items.every((item) => other.contains(item));
+  }
+
+  all(f: (v: T) => boolean): boolean {
+    const items = this.items;
+    const length = items.length;
+    for (let i = 0; i < length; i++) {
+      const item = items[i];
+      if (!f(item)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  map<Out>(f: (v: T) => Out): Set<Out> {
+    const output = new SetImpl<Out>();
+    this.items.forEach((item) => output.add(f(item)));
+    return output;
+  }
+
+  contains(value: T): boolean {
+    const hash = value.toString();
+    return this.containsHash(hash);
+  }
+
+  add(value: T): boolean {
+    const hash = value.toString();
+    if (!this.containsHash(hash)) {
+      this.index[hash] = { index: this.items.length, value: value };
+      this.items.push(value);
+      return true;
+    }
+    return false;
+  }
+
+  remove(value: T): boolean {
+    const valueHash = value.toString();
+    const existingItem = this.index[valueHash];
+    if (existingItem == null) {
+      return false;
+    }
+    delete this.index[valueHash];
+    for (let i = existingItem.index + 1; i < this.items.length; i++) {
+      this.index[this.items[i].toString()].index--;
+    }
+    this.items.splice(existingItem.index, 1);
+    return true;
+  }
+
+  union(other: Set<T>): Set<T> {
+    const output: Set<T> = new SetImpl();
+    this.forEach((item) => output.add(item));
+    other.forEach((item) => output.add(item));
+    return output;
+  }
+
+  intersection(other: Set<T>): Set<T> {
+    const output: Set<T> = new SetImpl();
+    this.forEach((item) => {
+      if (other.contains(item)) output.add(item);
+      return true;
+    });
+    return output;
+  }
+
+  subtract(other: Set<T>): Set<T> {
+    const output: Set<T> = new SetImpl();
+    this.forEach((item) => {
+      if (!other.contains(item)) output.add(item)
+      return true;
+    });
+    return output;
+  }
+
+  isSubsetOf(other: Set<T>): boolean {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (!other.contains(item)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  isDisjoint(other: Set<T>): boolean {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (other.contains(item)) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+function quote(s: string) {
+  if (s.indexOf('\'') < 0) {
+    return "'" + s + "'";
+  }
+  return '"' + s.replace('"', '\\"') + '"';
+}
+
+export namespace Types {
+  export interface NullType {
+    type: 'null';
+  }
+  export interface StringType {
+    type: 'string';
+    value: null|string;
+  }
+  export interface NumberType {
+    type: 'number';
+  }
+  export interface BooleanType {
+    type: 'boolean';
+  }
+  export interface ArrayType {
+    type: 'array';
+    contained: Type;
+  }
+  export interface ObjectType {
+    type: 'object';
+    spec: null|{[k:string]: Type};
+  }
+  type NonNullPrimitiveType = StringType | NumberType | BooleanType;
+  // type PrimitiveType = NullType | NonNullPrimitiveType;
+  type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType;
+  type SimpleType = NonNullSimpleType | NullType;
+
+  export interface UnionType {
+    type: 'union';
+    types: NonUnionType[];
+  }
+  export interface NullableType {
+    type: 'nullable';
+    subtype: NonNullableNonNullType;
+  }
+
+  type NonUnionType = SimpleType | NullableType;
+  type NonNullableNonNullType = NonNullSimpleType | UnionType;
+  type NonNullableType = SimpleType | UnionType;
+
+  export type Type = NonUnionType | NonNullableType | NullType;
+
+  export function isNull(a: Type): a is NullType {
+    return a.type === 'null';
+  }
+  export function isString(a: Type): a is StringType {
+    return a.type === 'string';
+  }
+  export function isNumber(a: Type): a is NumberType {
+    return a.type === 'number';
+  }
+  export function isBoolean(a: Type): a is BooleanType {
+    return a.type === 'boolean';
+  }
+  export function isArray(a: Type): a is ArrayType {
+    return a.type === 'array';
+  }
+  export function isObject(a: Type): a is ObjectType {
+    return a.type === 'object';
+  }
+  export function isUnion(a: Type): a is UnionType {
+    return a.type === 'union';
+  }
+  export function isNullable(a: Type): a is NullableType {
+    return a.type === 'nullable';
+  }
+
+  function toStringInternal(a: Type, visited: Type[],
+      indices: {current: number, map: {[k: string]: number}}): string {
+
+    for (let i = 0; i < visited.length; i++) {
+      if (visited[i] === a) {
+        let resolvedRecursionIndex = indices.map[i];
+        if (resolvedRecursionIndex == null) {
+          resolvedRecursionIndex = indices.map[i] = indices.current;
+          indices.current++;
+        }
+        return '{$' + resolvedRecursionIndex + '}';
+      }
+    }
+
+    if (isNull(a)) { return 'Null'; }
+    else if (isString(a)) {
+      if (a.value == null) return 'String';
+      return 'String<' + quote(a.value) + '>';
+    } else if (isNumber(a)) { return 'Number'; }
+    else if (isBoolean(a)) { return 'Boolean'; }
+    else if (isNullable(a)) {
+      const subtypeStr = toStringInternal(a.subtype, visited.concat([a]), indices);
+      return 'Nullable<' + subtypeStr + '>';
+    } else if (isArray(a)) {
+      const containedStr = toStringInternal(a.contained, visited.concat([a]), indices);
+      return 'Array<' + containedStr + '>';
+    } else if (isObject(a)) {
+      if (a.spec == null) {
+        return 'Object';
+      }
+      const newVisited = visited.concat([a]);
+      const keys = ObjectKeys(a.spec);
+      keys.sort();
+      const keyPairs: string[] = [];
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        if (Object.hasOwnProperty.call(a.spec, key)) {
+          const valueStr = toStringInternal(a.spec[key], newVisited, indices);
+          keyPairs.push(quote(key) + ': ' + valueStr);
+        }
+      }
+      return '{' + keyPairs.join(', ') + '}';
+    } else if (isUnion(a)) {
+      const newVisited = visited.concat([a]);
+      const typeStrings: string[] = [];
+      for (let i = 0; i < a.types.length; i++) {
+        const typeStr = toStringInternal(a.types[i], newVisited, indices);
+        typeStrings.push(typeStr);
+      }
+      return typeStrings.join('|');
+    }
+    return unreachable(a);
+  }
+  export function toString(a: Type): string {
+    return toStringInternal(a, [], {current: 0, map: {}});
+  }
+
+  export const Null: NullType = { type: 'null' };
+  export const Number: NumberType = { type: 'number' };
+  export const String: StringType = { type: 'string', value: null };
+  export function StringValue(value: string): StringType {
+    return { type: 'string', value: value };
+  }
+  export const Boolean: BooleanType = { type: 'boolean' };
+  export function Nullable(subtype: Type): NullableType|NullType {
+    while (subtype.type === 'nullable') {
+      subtype = subtype.subtype;
+    }
+    if (isNull(subtype)) { return Null; }
+    return { type: 'nullable', subtype: subtype };
+  }
+  export function Array(contained: Type): ArrayType {
+    return { type: 'array', contained: contained };
+  }
+  export function Object(spec?: null|{[k:string]: Type}): ObjectType {
+    return { type: 'object', spec: spec || null };
+  }
+  function allNullable(types: NonUnionType[]): types is NullableType[] {
+    return types.every((t) => isNullable(t));
+  }
+  export function Union(types: Type[]): UnionType | NullableType {
+    const unpackedTypes: NonUnionType[] = [];
+    types.forEach((value) => {
+      if (isUnion(value)) {
+        value.types.forEach((subtype) => unpackedTypes.push(subtype));
+      } else {
+        unpackedTypes.push(value);
+      }
+    });
+    if (allNullable(unpackedTypes)) {
+      const allSubtypes = unpackedTypes.map((t) => t.subtype);
+      return Nullable(Union(allSubtypes)) as NullableType;
+    }
+    return { type: 'union', types: unpackedTypes };
+  }
+
+  function equalsInternal(a: Type, b: Type, verified: {a: Type, b: Type}[]): boolean {
+    for (let i = 0; i < verified.length; i++) {
+      const verifiedType = verified[i];
+      if (a === verifiedType.a && b === verifiedType.b) {
+        return true;
+      }
+    }
+
+    if (isNull(a) && isNull(b)) {
+      return true;
+    } else if (isString(a) && isString(b)) {
+      return a.value === b.value;
+    } else if (isNumber(a) && isNumber(b)) {
+      return true;
+    } else if (isBoolean(a) && isBoolean(b)) {
+      return true;
+    } else if (isNullable(a) && isNullable(b)) {
+      return equalsInternal(a.subtype, b.subtype, verified.concat([{a: a, b: b}]));
+    } else if (isArray(a) && isArray(b)) {
+      return equalsInternal(a.contained, b.contained, verified.concat([{a: a, b: b}]));
+    } else if (isObject(a) && isObject(b)) {
+      const aSpec = a.spec;
+      const bSpec = b.spec;
+      if (aSpec == null && bSpec == null) {
+        return true;
+      } else if (aSpec != null && bSpec != null) {
+        const aKeys = Sets.create(ObjectKeys(aSpec));
+        const bKeys = Sets.create(ObjectKeys(bSpec));
+        const intersection = aKeys.intersection(bKeys);
+        if (intersection.size() !== aKeys.size()) {
+          return false;
+        }
+        const newVerified = verified.concat([{a: a, b: b}]);
+        return intersection.all((key) => equalsInternal(aSpec[key], bSpec[key], newVerified));
+      }
+    } else if (isUnion(a) && isUnion(b)) {
+      const sortedATypes = a.types;
+      const sortedBTypes = b.types;
+      sortedATypes.sort((a, b) => toString(a).localeCompare(toString(b)));
+      sortedBTypes.sort((a, b) => toString(a).localeCompare(toString(b)));
+      if (sortedATypes.length !== sortedBTypes.length) return false;
+      const newVerified = verified.concat([{a: a, b: b}]);
+      for (let i = 0; i < sortedATypes.length; i++) {
+        if (!equalsInternal(sortedATypes[i], sortedBTypes[i], newVerified)) return false;
+      }
+      return true;
+    }
+    return false
+  }
+  export function equals(a: Type, b: Type): boolean {
+    return equalsInternal(a, b, []);
+  }
+
+  /**
+   * This is used for building up a type. It's the equivalent of `&` in TypeScript.
+   * This should return null for everything except objects (since it's not
+   * possible to have a union of anything but objects).
+   */
+  export function combine(a: Type, b: Type): Type|null {
+    if (isNullable(a)) {
+      if (isNullable(b)) {
+        const combinedSubtype = combine(a.subtype, b.subtype);
+        if (combinedSubtype != null) {
+          return Nullable(combinedSubtype);
+        }
+      }
+    } else if (isNull(a)) {
+      if (isNull(b)) {
+        return Null;
+      }
+    } else if (isNumber(a)) {
+      if (isNumber(b)) {
+         return Number;
+      }
+    } else if (isString(a)) {
+      if (isString(b)) {
+        return String;
+      }
+    } else if (isBoolean(a)) {
+      if (isBoolean(b)) {
+        return Boolean;
+      }
+    } else if (isUnion(a)) {
+      if (equals(a, b)) {
+        return a;
+      }
+    } else if (isArray(a)) {
+      if (isArray(b)) {
+        return a;
+      }
+    } else if (isObject(a) && isObject(b)) {
+      const aSpec = a.spec;
+      const bSpec = b.spec;
+      if (aSpec == null && bSpec == null) {
+        return a;
+      } else if (aSpec == null || bSpec == null) {
+        return null;
+      }
+      const aPropertySet = Sets.create(ObjectKeys(aSpec));
+      const bPropertySet = Sets.create(ObjectKeys(bSpec));
+      const propertiesUnion = aPropertySet.union(bPropertySet);
+      const combinedSpec: {[k: string]: Type} = {};
+      if (!propertiesUnion.all((prop) => {
+        const aProp = aSpec[prop];
+        const bProp = bSpec[prop];
+        if (aProp != null && bProp != null) {
+          const combined = combine(aProp, bProp);
+          if (combined == null) {
+            return false;
+          }
+          combinedSpec[prop] = combined;
+        } else if (aProp != null) {
+          combinedSpec[prop] = aProp;
+        } else {
+          combinedSpec[prop] = bProp;
+        }
+      })) {
+        return null;
+      }
+      return Object(combinedSpec);
+    }
+    return null;
+  }
+
+  /**
+   * This returns a type that will accept either this type or the other type
+   * when it is assigned to the resulting type. This one should never fail,
+   * since we can always default to a union type.
+   */
+  export function unify(a: Type, b: Type): Type {
+    if ((isNull(a) || isNullable(a)) && (isNull(b) || isNullable(b))) {
+      // Either both are nullable, or one is nullable and the other is null
+      if (isNullable(a) && isNullable(b)) {
+        return Nullable(unify(a.subtype, b.subtype));
+      } else if (isNullable(a)) {
+        // b must be null
+        return a;
+      } else if (isNullable(b)) {
+        // a must be null
+        return b;
+      } else if (isNull(a)) {
+        return b;
+      } else if (isNull(b)) {
+        return a;
+      }
+      return unreachable(a), unreachable(b);
+    } else if (isNull(a) || isNullable(a)) {
+      // One of them is null or nullable
+      if (isNull(a)) {
+        return Nullable(b)
+      } else if (isNullable(a)) {
+        return Nullable(unify(a.subtype, b));
+      }
+      return unreachable(a);
+    } else if (isNull(b) || isNullable(b)) {
+      if (isNull(b)) {
+        return Nullable(a);
+      } else if (isNullable(b)) {
+        return Nullable(unify(a, b.subtype));
+      }
+      return unreachable(b);
+    }
+    return Union([a, b]);
+  }
+
+  export function infer(obj: any): Type|null {
+    if (typeof obj === 'number') {
+      return Number;
+    } else if (typeof obj === 'string') {
+      return String;
+    } else if (typeof obj === 'boolean') {
+      return Boolean;
+    } else if (obj == null) {
+      return Null;
+    } else if (obj && typeof obj.length === 'number') {
+      const knownTypes: Type[] = [];
+      for (let i = 0; i < obj.length; i++) {
+        const inferred = infer(obj[i]);
+        if (inferred == null) return null;
+        let found = false;
+        for (let j = 0; j < knownTypes.length; j++) {
+          if (equals(knownTypes[j], inferred)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          knownTypes.push(inferred);
+        }
+      }
+      if (knownTypes.length === 1) {
+        return Array(knownTypes[0]);
+      }
+      return Array(Union(knownTypes));
+    } else if (typeof obj === 'object') {
+      return Object();
+    }
+    return null;
+  }
+}
 
 /*
 

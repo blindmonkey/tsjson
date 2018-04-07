@@ -11,7 +11,7 @@ describe('BooleanReader', () => {
   it('should not read numbers', () => {
     const result = reader.read(Math.PI);
     if (result.isFailure()) {
-      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(Math.PI, 'boolean', 'number'));
+      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(Math.PI, 'Boolean', 'Number'));
     } else {
       chai.assert(false);
     }
@@ -21,7 +21,7 @@ describe('BooleanReader', () => {
     const value = '3.14159';
     const result = reader.read(value);
     if (result.isFailure()) {
-      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'boolean', 'string'));
+      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'Boolean', 'String'));
     } else {
       chai.assert(false);
     }
@@ -41,7 +41,7 @@ describe('BooleanReader', () => {
     const value = [1, 2, 3];
     const result = reader.read(value);
     if (result.isFailure()) {
-      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'boolean', 'array of number'));
+      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'Boolean', 'Array<Number>'));
     } else {
       chai.assert(false);
     }
@@ -51,7 +51,7 @@ describe('BooleanReader', () => {
     const value = {};
     const result = reader.read(value);
     if (result.isFailure()) {
-      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'boolean', 'object'));
+      expect(result.error).to.be.deep.equal(errors.InvalidTypeError.create(value, 'Boolean', 'Object'));
     } else {
       chai.assert(false);
     }

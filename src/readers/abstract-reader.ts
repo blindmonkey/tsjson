@@ -2,9 +2,10 @@ import { DecodingError } from 'errors/decoding/decoding-error';
 import { Result } from 'result/result';
 
 import { Reader } from './reader.interface';
+import { Types } from './type-helper';
 
 export abstract class AbstractReader<T> implements Reader<T> {
-  abstract expectedType: string;
+  abstract expectedType: Types.Type;
   abstract read(obj: any): Result<T, DecodingError>
 
   withDefault(value: T): DefaultReader<T> {
@@ -17,7 +18,7 @@ export abstract class AbstractReader<T> implements Reader<T> {
 }
 
 export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
-  expectedType: string;
+  expectedType: Types.Type;
   private reader: Reader<T>;
   private default: T;
   constructor(reader: Reader<T>, defaultValue: T) {
@@ -36,6 +37,6 @@ export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
 export class OptionalReader<T> extends DefaultReader<T|null> {
   constructor(reader: Reader<T>) {
     super(reader, null);
-    this.expectedType = 'nullable ' + reader.expectedType;
+    this.expectedType = Types.Nullable(reader.expectedType);
   }
 }

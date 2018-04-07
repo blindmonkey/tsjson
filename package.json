@@ -4,13 +4,15 @@
   "description": "TypeScript JSON encoding/decoding",
   "main": "index.js",
   "scripts": {
-    "server": "npx webpack browser/entry-point.js dist/src/index.js --output browser/bundle.js && npx node ./browser/server.js",
+    "server": "npm run build && npx webpack browser/entry-point.js dist/src/index.js --output browser/bundle.js && npx node ./browser/server.js",
     "clean": "rm -rf ./dist",
     "pack": "npx webpack",
     "build": "npx tsc",
     "watch": "npx tsc -w",
     "test": "npx mocha --reporter spec --require ts-node/register --require tsconfig-paths/register 'tests/**/*.test.ts'",
-    "coverage": "npx nyc --reporter=html --reporter=text mocha --require=ts-node/register --require tsconfig-paths/register --require=source-map-support/register --recursive 'tests/**/*.test.ts'"
+    "test:one": "npx mocha --reporter spec --require ts-node/register --require tsconfig-paths/register",
+    "coverage": "npx nyc --reporter=html --reporter=text mocha --require=ts-node/register --require tsconfig-paths/register --require=source-map-support/register --recursive 'tests/**/*.test.ts'",
+    "coverage:one": "npx nyc --reporter=html --reporter=text mocha --require=ts-node/register --require tsconfig-paths/register --require=source-map-support/register --recursive"
   },
   "nyc": {
     "extension": [

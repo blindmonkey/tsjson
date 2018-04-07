@@ -12,19 +12,31 @@
       }
       #json-schema-status {
         background-color: pink;
-        border: 1px red;
+        border: 1px red solid;
         border-radius: 8px;
         padding: 8px;
       }
       #json-schema-status.loaded {
         background-color: lightgreen;
+        border: 1px green solid;
+      }
+
+      #read-status {
+        background-color: pink;
+        border: 1px red solid;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      #read-status.success {
+        background-color: lightgreen;
+        border: 1px green solid;
       }
     </style>
     <h1>Test Web Page for TsJson</h1>
     <h2>Enter TsJson Schema</h2>
     <textarea id="ts-area">
 TsJson.obj()
-  .prop('testNumber', TsJson.number)
+  .prop('testNumber', TsJson.obj().prop('x', TsJson.obj().prop('y', TsJson.number)))
   .prop('testString', TsJson.string)
 </textarea>
     <br/>
@@ -32,36 +44,92 @@ TsJson.obj()
     <button id="load-schema">Load JSON Schema</button>
 
     <h2>Enter JSON</h2>
-    <textarea id="json-area"></textarea>
+    <textarea id="json-area">{}</textarea>
     <br/>
     <button id="process-json">Process JSON</button>
+
+    <br/><br/>
+    <div id="read-status"></div>
 
     <script>
       var jsonSchemaStatusDiv = document.getElementById('json-schema-status');
       var LoadedSchema = null;
+
+      function setSchemaStatus(status) {
+        if (status === true) {
+          jsonSchemaStatusDiv.classList.add('loaded');
+          jsonSchemaStatusDiv.textContent = 'TsJson schema loaded'
+          return;
+        }
+        jsonSchemaStatusDiv.classList.remove('loaded');
+        if (typeof status === 'string') {
+          jsonSchemaStatusDiv.textContent = 'Error: ' + status;
+        } else {
+          jsonSchemaStatusDiv.textContent = 'Error: ' + e;
+        }
+      }
+
+      var readStatusDiv = document.getElementById('read-status');
+      function setReadStatus(success, status) {
+        while (readStatusDiv.children.length > 0) {
+          readStatusDiv.children[0].remove();
+        }
+        if (success) {
+          readStatusDiv.classList.add('success');
+        } else {
+          readStatusDiv.classList.remove('success');
+        }
+        if (status.indexOf('\n') >= 0) {
+          var lines = status.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+            var div = document.createElement('div');
+            div.textContent = lines[i];
+            readStatusDiv.appendChild(div);
+          }
+        } else {
+          readStatusDiv.textContent = status;
+        }
+      }
+
       document.getElementById('load-schema').addEventListener('click', function() {
         try {
           var value = eval(document.getElementById('ts-area').value);
         } catch (e) {
           LoadedSchema = null;
-          jsonSchemaStatusDiv.classList.remove('loaded');
-          jsonSchemaStatusDiv.textContent = 'Error: ' + e;
+          setSchemaStatus(e)
           return;
         }
         if (!(value.read && value.read.apply && value.read.call)) {
           LoadedSchema = null;
-          jsonSchemaStatusDiv.classList.remove('loaded');
-          jsonSchemaStatusDiv.textContent = 'Error: Invalid TsJson schema';
+          setSchemaStatus('Invalid TsJson schema');
           return;
         }
+        setSchemaStatus(true)
         LoadedSchema = TsJson.obj()
           .prop('json', value);
-        jsonSchemaStatusDiv.classList.add('loaded');
-        jsonSchemaStatusDiv.textContent = 'TsJson schema loaded'
       });
 
       document.getElementById('process-json').addEventListener('click', function() {
-        console.log(LoadedSchema.read({json: JSON.parse(document.getElementById('json-area').value)}).json);
+        if (LoadedSchema == null) {
+          setReadStatus(false, 'Please load a schema first');
+          return;
+        }
+        var unparsedJson = document.getElementById('json-area').value;
+        var parsedJson = JSON.parse(unparsedJson);
+        var jsonReadResult = LoadedSchema.read({json: parsedJson})
+
+        if (jsonReadResult.isFailure()) {
+          var errorString = JSON.stringify(jsonReadResult.error);
+          if (jsonReadResult.error.type === 'invalid-type') {
+            errorString = "Error: Invalid Type\n" +
+              "Expected: " + jsonReadResult.error.expected + "\n" +
+              "Actual: " + jsonReadResult.error.actual + '\n' +
+              "Value: " + JSON.stringify(jsonReadResult.error.value);
+          }
+          setReadStatus(false, errorString);
+        } else {
+          setReadStatus(true, JSON.stringify(jsonReadResult.value));
+        }
       });
 
     </script>
