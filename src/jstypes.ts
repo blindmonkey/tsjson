@@ -348,6 +348,7 @@ export namespace Types {
     return { type: 'union', types: unpackedTypes };
   }
 
+
   function equalsInternal(a: Type, b: Type, verified: {a: Type, b: Type}[]): boolean {
     for (let i = 0; i < verified.length; i++) {
       const verifiedType = verified[i];

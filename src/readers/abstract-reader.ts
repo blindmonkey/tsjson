@@ -2,7 +2,7 @@ import { DecodingError } from 'errors/decoding/decoding-error';
 import { Result } from 'result/result';
 
 import { Reader } from './reader.interface';
-import { Types } from './type-helper';
+import { Types } from '../jstypes';
 
 export abstract class AbstractReader<T> implements Reader<T> {
   abstract expectedType: Types.Type;
