@@ -24,7 +24,7 @@ var TsJson;
     }
     TsJson.extract = extract;
     function enumeration() {
-        return new enum_reader_1.EnumReader(new enum_reader_1.EmptyEnumReader());
+        return enum_reader_1.EnumReader.create();
     }
     TsJson.enumeration = enumeration;
     function obj() {

@@ -6,7 +6,7 @@ import { Reader } from './reader.interface';
 import { ExtractReader } from './extract-reader';
 import { Types } from '../jstypes';
 
-interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
+export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
   // expectedTypes: {[k: string]: string};
   expectedType: Types.Type;
   isEmpty(): this is EmptyObjectConstructor;
@@ -18,7 +18,7 @@ interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
 export class EmptyObjectConstructor extends AbstractReader<{}> implements ObjectConstructorInterface<{}> {
   expectedType = Types.Object({});
   // expectedTypes = {};
-  isEmpty(): this is EmptyObjectConstructor { return true }
+  isEmpty(): this is EmptyObjectConstructor { return true; }
   put<S extends string, U>(s: S, reader: Reader<U>): ObjectConstructorInterface<{[s in S]: U} & {}> {
     return new ObjectConstructor<S, U, {}>(s, reader, this);
   }

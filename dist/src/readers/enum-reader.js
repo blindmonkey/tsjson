@@ -33,6 +33,7 @@ var EnumNoMatchError;
 })(EnumNoMatchError || (EnumNoMatchError = {}));
 var EmptyEnumReader = /** @class */ (function () {
     function EmptyEnumReader() {
+        this.expectedType = jstypes_1.Types.Union([]);
         this.expectedValues = [];
     }
     EmptyEnumReader.prototype.isEmpty = function () { return true; };
@@ -49,7 +50,6 @@ var EmptyEnumReader = /** @class */ (function () {
     };
     return EmptyEnumReader;
 }());
-exports.EmptyEnumReader = EmptyEnumReader;
 var EnumValueReader = /** @class */ (function () {
     function EnumValueReader(value, baseReader) {
         this.value = value;
@@ -79,7 +79,6 @@ var EnumValueReader = /** @class */ (function () {
     };
     return EnumValueReader;
 }());
-exports.EnumValueReader = EnumValueReader;
 var EnumReader = /** @class */ (function (_super) {
     __extends(EnumReader, _super);
     function EnumReader(base) {
@@ -88,6 +87,9 @@ var EnumReader = /** @class */ (function (_super) {
         _this.expectedType = jstypes_1.Types.Union(base.expectedValues.map(function (type) { return jstypes_1.Types.StringValue(type); }));
         return _this;
     }
+    EnumReader.create = function () {
+        return new EnumReader(new EmptyEnumReader());
+    };
     EnumReader.prototype.case = function (s) {
         return new EnumReader(this.base.case(s));
     };

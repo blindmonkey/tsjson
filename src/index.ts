@@ -5,7 +5,7 @@ import { OptionalReader } from 'readers/abstract-reader'
 import { PrimitiveReaders } from 'readers/primitive-readers';
 import { ArrayReader } from 'readers/array-reader';
 import { ExtractReader } from 'readers/extract-reader';
-import { EnumReader, EmptyEnumReader } from 'readers/enum-reader';
+import { EnumReader } from 'readers/enum-reader';
 import { EmptyObjectConstructor } from 'readers/object-reader';
 
 
@@ -31,7 +31,7 @@ export namespace TsJson {
   }
 
   export function enumeration(): EnumReader<never> {
-    return new EnumReader(new EmptyEnumReader());
+    return EnumReader.create();
   }
 
   export function obj(): EmptyObjectConstructor {

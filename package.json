@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "TypeScript JSON encoding/decoding",
   "main": "dist/bundle.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "server": "npm run build && npx webpack browser/entry-point.js dist/src/index.js --output browser/bundle.js && npx node ./browser/server.js",
     "clean": "rm -rf ./dist",
     "pack": "npx webpack",
+    "pack-types": "npx webpack",
     "build": "npx tsc",
     "watch": "npx tsc -w",
     "test": "npx mocha --reporter spec --require ts-node/register --require tsconfig-paths/register 'tests/**/*.test.ts'",

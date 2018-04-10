@@ -209,12 +209,12 @@ export namespace Types {
   }
   export interface ObjectType {
     type: 'object';
-    spec: null|{[k:string]: Type};
+    spec: null|{[k: string]: Type};
   }
-  type NonNullPrimitiveType = StringType | NumberType | BooleanType;
+  export type NonNullPrimitiveType = StringType | NumberType | BooleanType;
   // type PrimitiveType = NullType | NonNullPrimitiveType;
-  type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType;
-  type SimpleType = NonNullSimpleType | NullType;
+  export type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType;
+  export type SimpleType = NonNullSimpleType | NullType;
 
   export interface UnionType {
     type: 'union';
@@ -225,9 +225,9 @@ export namespace Types {
     subtype: NonNullableNonNullType;
   }
 
-  type NonUnionType = SimpleType | NullableType;
-  type NonNullableNonNullType = NonNullSimpleType | UnionType;
-  type NonNullableType = SimpleType | UnionType;
+  export type NonUnionType = SimpleType | NullableType;
+  export type NonNullableNonNullType = NonNullSimpleType | UnionType;
+  export type NonNullableType = SimpleType | UnionType;
 
   export type Type = NonUnionType | NonNullableType | NullType;
 

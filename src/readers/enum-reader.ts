@@ -25,10 +25,10 @@ interface EnumReaderInterface<T extends string> {
   read(obj: any): Result<T, errors.DecodingError|EnumNoMatchError>
 }
 
-
-export class EmptyEnumReader implements EnumReaderInterface<never> {
-  expectedValues = [];
-  isEmpty(): this is EmptyEnumReader { return true }
+class EmptyEnumReader implements EnumReaderInterface<never> {
+  public expectedType = Types.Union([]);
+  public expectedValues: string[] = [];
+  isEmpty(): this is EmptyEnumReader { return true; }
   case<S extends string>(s: S): EnumReaderInterface<S> {
     return new EnumValueReader(s, this);
   }
@@ -42,7 +42,7 @@ export class EmptyEnumReader implements EnumReaderInterface<never> {
   }
 }
 
-export class EnumValueReader<T extends string, Base extends string> implements EnumReaderInterface<T|Base> {
+class EnumValueReader<T extends string, Base extends string> implements EnumReaderInterface<T|Base> {
   expectedValues: string[];
   private baseReader: EnumReaderInterface<Base>;
   private value: T;
@@ -76,10 +76,13 @@ export class EnumValueReader<T extends string, Base extends string> implements E
 export class EnumReader<T extends string> extends AbstractReader<T> implements Reader<T> {
   public expectedType: Types.Type;
   private base: EnumReaderInterface<T>;
-  constructor(base: EnumReaderInterface<T>) {
+  private constructor(base: EnumReaderInterface<T>) {
     super();
     this.base = base;
     this.expectedType = Types.Union(base.expectedValues.map((type) => Types.StringValue(type)));
+  }
+  static create(): EnumReader<never> {
+    return new EnumReader(new EmptyEnumReader());
   }
   case<S extends string>(s: S): EnumReader<T|S> {
     return new EnumReader(this.base.case(s));
