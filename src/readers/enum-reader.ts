@@ -74,12 +74,12 @@ export class EnumValueReader<T extends string, Base extends string> implements E
 }
 
 export class EnumReader<T extends string> extends AbstractReader<T> implements Reader<T> {
-  expectedType: Types.Type;
+  public expectedType: Types.Type;
   private base: EnumReaderInterface<T>;
   constructor(base: EnumReaderInterface<T>) {
     super();
     this.base = base;
-    this.expectedType = Types.Enum(base.expectedValues);
+    this.expectedType = Types.Union(base.expectedValues.map((type) => Types.StringValue(type)));
   }
   case<S extends string>(s: S): EnumReader<T|S> {
     return new EnumReader(this.base.case(s));

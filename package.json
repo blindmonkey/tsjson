@@ -2,7 +2,7 @@
   "name": "tsjson",
   "version": "1.0.0",
   "description": "TypeScript JSON encoding/decoding",
-  "main": "index.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "server": "npm run build && npx webpack browser/entry-point.js dist/src/index.js --output browser/bundle.js && npx node ./browser/server.js",
     "clean": "rm -rf ./dist",

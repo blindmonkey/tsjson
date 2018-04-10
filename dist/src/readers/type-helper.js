@@ -1,7 +1,7 @@
+"use strict";
 // function objKeys(obj: {[k:string]: any}): string[] {
 //   return Object.keys(obj);
 // }
-
 // export namespace Types {
 //   export interface Type {
 //     isUnknown(): this is UnknownType
@@ -18,16 +18,13 @@
 //     isEnum(): this is EnumType
 //     isNullable(): this is NullableType
 //     isUnion(): this is UnionType
-
 //     /** Whether they are the exact same type. */
 //     equalTo(other: Type): boolean
-
 //     /**
 //      * Whether an object of the type `other` can be assigned to a variable of
 //      * `this` type.
 //      */
 //     canBeAssigned(other: Type): boolean
-
 //     /**
 //      * This is used for building up a type. It's the equivalent of `&` in TypeScript.
 //      * This should return null for everything except objects (since it's not
@@ -49,7 +46,6 @@
 //   export interface NullableType extends Type {
 //     subtype: Type;
 //   }
-
 //   export interface NumberType extends Type {}
 //   export interface StringType extends Type {}
 //   export interface StringValueType<T extends string> extends StringType {
@@ -87,7 +83,6 @@
 //     abstract equalTo(other: Type): boolean
 //     abstract canBeAssigned(other: Type): boolean
 //   }
-
 //   function unifyConsideringNullables(a: Type, b: Type, backup: (a: Type, b: Type) => Type|null): NullableType|NullType|null {
 //     if (a.isNull() && b.isNull()) {
 //       // Both are null, return null.
@@ -119,7 +114,6 @@
 //     }
 //     return backup(a, b);
 //   }
-
 //   class UnknownTypeImpl extends BaseType implements UnknownType {
 //     isUnknown(): this is UnknownType { return true }
 //     combine(): Type|null { return null }
@@ -155,7 +149,6 @@
 //       return this.equalTo(other) ? this : null;
 //     }
 //     unify(other: Type): Type {
-      
 //     }
 //   }
 //   class NullTypeImpl extends BaseType implements NullType {
@@ -288,7 +281,6 @@
 //         return null;
 //       });
 //     }
-
 //     toString(): string {
 //       return quoteAndEscape('"', this.value);
 //     }
@@ -381,7 +373,6 @@
 //     }
 //     toString(): string { return 'Array<' + this.contained.toString() + '>' }
 //   }
-
 //   export const Unknown = new UnknownTypeImpl();
 //   export const Null = new NullTypeImpl();
 //   export const Number = new NumberTypeImpl();
@@ -406,7 +397,6 @@
 //   export function StringValue<T extends string>(value: T): StringValueType<T> {
 //     return new StringValueTypeImpl(value);
 //   }
-
 //   export function infer(obj: any): Type {
 //     if (typeof obj === 'string') {
 //       return Types.String;
@@ -419,7 +409,6 @@
 //     } else if (typeof obj.length === 'number')
 //     return Types.Unknown;
 //   }
-
 //   export const UnknownType = 'unknown';
 //   export const NullType = 'null';
 //   export const StringType = 'string';
@@ -427,8 +416,6 @@
 //   export const BooleanType = 'boolean';
 //   export const ArrayType = 'array';
 //   export const ObjectType = 'object';
-
-
 //   export type TypeObj = {name: string, complex: boolean};
 //   export function simple(s: string): TypeObj {
 //     return {name: s, complex: false};
@@ -436,7 +423,6 @@
 //   export function complex(s: string): TypeObj {
 //     return {name: s, complex: true};
 //   }
-
 //   export function determineContainedTypes(objs: any[]): TypeObj[] {
 //     const containedTypes: {[s: string]: TypeObj} = {};
 //     for (let i = 0; i < objs.length; i++) {
@@ -446,11 +432,9 @@
 //     const keys = objKeys(containedTypes).sort();
 //     return keys.map((v) => containedTypes[v]);
 //   }
-
 //   export function quoteAndEscape(quote: string, string: string): string {
 //     return [quote, string.replace(quote, '\\' + quote), quote].join('');
 //   }
-
 //   export function determineType(obj: any): TypeObj {
 //     if (typeof obj === 'number') {
 //       return simple(NumberType);
@@ -468,3 +452,4 @@
 //     return simple(UnknownType);
 //   }
 // }
+//# sourceMappingURL=type-helper.js.map

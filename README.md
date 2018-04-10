@@ -46,4 +46,5 @@ The `Result` wrapper simply helps us handle errors sensibly. The important part 
 
 # Building
 
-Use `npm run build` to build the project into the `dist` directory.
+To configure the build environment, run `npm i --dev` to install all the dependencies.
+Then run `npm run build` to build the project into the `dist` directory.

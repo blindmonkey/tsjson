@@ -2,7 +2,7 @@ function unreachable(a: never): never {
   return a;
 }
 
-function ObjectKeys(obj: Object) {
+function ObjectKeys(obj: object) {
   return Object.keys(obj);
 }
 
@@ -19,60 +19,56 @@ function ObjectKeys(obj: Object) {
 //   }
 // }
 
-interface Set<T> {
-  size(): number
-  add(value: T): boolean
-  remove(value: T): boolean
-  contains(value: T): boolean
-  toArray(): T[]
-  copy(): Set<T>
-  equals(other: Set<T>): boolean
+interface ISet<T> {
+  size(): number;
+  add(value: T): boolean;
+  remove(value: T): boolean;
+  contains(value: T): boolean;
+  toArray(): T[];
+  copy(): ISet<T>;
+  equals(other: ISet<T>): boolean;
   // Iterable
-  all(f: (v: T) => boolean): boolean
-  forEach(f: (v: T) => boolean): void
-  map<Out>(f: (v: T) => Out): Set<Out>
-  // Set operations
-  union(other: Set<T>): Set<T>
-  intersection(other: Set<T>): Set<T>
-  subtract(other: Set<T>): Set<T>
-  isSubsetOf(other: Set<T>): boolean
-  isDisjoint(other: Set<T>): boolean
+  all(f: (v: T) => boolean): boolean;
+  forEach(f: (v: T) => boolean): void;
+  map<Out>(f: (v: T) => Out): ISet<Out>;
+  // ISet operations
+  union(other: ISet<T>): ISet<T>;
+  intersection(other: ISet<T>): ISet<T>;
+  subtract(other: ISet<T>): ISet<T>;
+  isSubsetOf(other: ISet<T>): boolean;
+  isDisjoint(other: ISet<T>): boolean;
 }
 
 namespace Sets {
-  export function create<T>(array: T[]): Set<T> {
-    const set: Set<T> = new SetImpl();
-    array.forEach((v) => set.add(v))
+  export function create<T>(array: T[]): ISet<T> {
+    const set: ISet<T> = new SetImpl();
+    array.forEach((v) => set.add(v));
     return set;
   }
 }
 
-class SetImpl<T> implements Set<T> {
+class SetImpl<T> implements ISet<T> {
   private items: T[] = [];
   private index: { [k: string]: { index: number, value: T } } = {};
 
-  private containsHash(hash: string): boolean {
-    return Object.hasOwnProperty.call(this.index, hash);
-  }
-
-  static create<T>(array: T[]): Set<T> {
-    const set: Set<T> = new Set();
-    array.forEach((v) => set.add(v))
+  public static create<T>(array: T[]): ISet<T> {
+    const set: ISet<T> = new SetImpl();
+    array.forEach((v) => set.add(v));
     return set;
   }
 
-  size(): number {
+  public size(): number {
     return this.items.length;
   }
-  toArray(): T[] {
+  public toArray(): T[] {
     return this.items.concat([]);
   }
 
-  copy(): Set<T> {
+  public copy(): ISet<T> {
     return Sets.create(this.items);
   }
 
-  forEach(f: (v: T) => boolean): void {
+  public forEach(f: (v: T) => boolean): void {
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
       if (!f(item)) {
@@ -81,7 +77,7 @@ class SetImpl<T> implements Set<T> {
     }
   }
 
-  equals(other: Set<T>): boolean {
+  public equals(other: ISet<T>): boolean {
     return other.size() == this.size() && this.items.every((item) => other.contains(item));
   }
 
@@ -97,7 +93,7 @@ class SetImpl<T> implements Set<T> {
     return true;
   }
 
-  map<Out>(f: (v: T) => Out): Set<Out> {
+  map<Out>(f: (v: T) => Out): ISet<Out> {
     const output = new SetImpl<Out>();
     this.items.forEach((item) => output.add(f(item)));
     return output;
@@ -108,17 +104,17 @@ class SetImpl<T> implements Set<T> {
     return this.containsHash(hash);
   }
 
-  add(value: T): boolean {
+  public add(value: T): boolean {
     const hash = value.toString();
     if (!this.containsHash(hash)) {
-      this.index[hash] = { index: this.items.length, value: value };
+      this.index[hash] = { index: this.items.length, value };
       this.items.push(value);
       return true;
     }
     return false;
   }
 
-  remove(value: T): boolean {
+  public remove(value: T): boolean {
     const valueHash = value.toString();
     const existingItem = this.index[valueHash];
     if (existingItem == null) {
@@ -132,32 +128,36 @@ class SetImpl<T> implements Set<T> {
     return true;
   }
 
-  union(other: Set<T>): Set<T> {
-    const output: Set<T> = new SetImpl();
+  public union(other: ISet<T>): ISet<T> {
+    const output: ISet<T> = new SetImpl();
     this.forEach((item) => output.add(item));
     other.forEach((item) => output.add(item));
     return output;
   }
 
-  intersection(other: Set<T>): Set<T> {
-    const output: Set<T> = new SetImpl();
+  public intersection(other: ISet<T>): ISet<T> {
+    const output: ISet<T> = new SetImpl();
     this.forEach((item) => {
-      if (other.contains(item)) output.add(item);
+      if (other.contains(item)) {
+        output.add(item);
+      }
       return true;
     });
     return output;
   }
 
-  subtract(other: Set<T>): Set<T> {
-    const output: Set<T> = new SetImpl();
+  public subtract(other: ISet<T>): ISet<T> {
+    const output: ISet<T> = new SetImpl();
     this.forEach((item) => {
-      if (!other.contains(item)) output.add(item)
+      if (!other.contains(item)) {
+        output.add(item);
+      }
       return true;
     });
     return output;
   }
 
-  isSubsetOf(other: Set<T>): boolean {
+  public isSubsetOf(other: ISet<T>): boolean {
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
       if (!other.contains(item)) {
@@ -167,7 +167,7 @@ class SetImpl<T> implements Set<T> {
     return true;
   }
 
-  isDisjoint(other: Set<T>): boolean {
+  public isDisjoint(other: ISet<T>): boolean {
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
       if (other.contains(item)) {
@@ -175,6 +175,10 @@ class SetImpl<T> implements Set<T> {
       }
     }
     return true;
+  }
+
+  private containsHash(hash: string): boolean {
+    return Object.hasOwnProperty.call(this.index, hash);
   }
 }
 
@@ -253,7 +257,7 @@ export namespace Types {
   }
 
   function toStringInternal(a: Type, visited: Type[],
-      indices: {current: number, map: {[k: string]: number}}): string {
+                            indices: {current: number, map: {[k: string]: number}}): string {
 
     for (let i = 0; i < visited.length; i++) {
       if (visited[i] === a) {
@@ -266,13 +270,18 @@ export namespace Types {
       }
     }
 
-    if (isNull(a)) { return 'Null'; }
-    else if (isString(a)) {
-      if (a.value == null) return 'String';
+    if (isNull(a)) {
+      return 'Null';
+    } else if (isString(a)) {
+      if (a.value == null) {
+        return 'String';
+      }
       return 'String<' + quote(a.value) + '>';
-    } else if (isNumber(a)) { return 'Number'; }
-    else if (isBoolean(a)) { return 'Boolean'; }
-    else if (isNullable(a)) {
+    } else if (isNumber(a)) {
+      return 'Number';
+    } else if (isBoolean(a)) {
+      return 'Boolean';
+    } else if (isNullable(a)) {
       const subtypeStr = toStringInternal(a.subtype, visited.concat([a]), indices);
       return 'Nullable<' + subtypeStr + '>';
     } else if (isArray(a)) {
@@ -286,8 +295,7 @@ export namespace Types {
       const keys = ObjectKeys(a.spec);
       keys.sort();
       const keyPairs: string[] = [];
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
+      for (const key of keys) {
         if (Object.hasOwnProperty.call(a.spec, key)) {
           const valueStr = toStringInternal(a.spec[key], newVisited, indices);
           keyPairs.push(quote(key) + ': ' + valueStr);
@@ -297,8 +305,8 @@ export namespace Types {
     } else if (isUnion(a)) {
       const newVisited = visited.concat([a]);
       const typeStrings: string[] = [];
-      for (let i = 0; i < a.types.length; i++) {
-        const typeStr = toStringInternal(a.types[i], newVisited, indices);
+      for (const type of a.types) {
+        const typeStr = toStringInternal(type, newVisited, indices);
         typeStrings.push(typeStr);
       }
       return typeStrings.join('|');
@@ -447,9 +455,9 @@ export namespace Types {
       } else if (aSpec == null || bSpec == null) {
         return null;
       }
-      const aPropertySet = Sets.create(ObjectKeys(aSpec));
-      const bPropertySet = Sets.create(ObjectKeys(bSpec));
-      const propertiesUnion = aPropertySet.union(bPropertySet);
+      const aPropertyISet = Sets.create(ObjectKeys(aSpec));
+      const bPropertyISet = Sets.create(ObjectKeys(bSpec));
+      const propertiesUnion = aPropertyISet.union(bPropertyISet);
       const combinedSpec: {[k: string]: Type} = {};
       if (!propertiesUnion.all((prop) => {
         const aProp = aSpec[prop];
@@ -465,6 +473,7 @@ export namespace Types {
         } else {
           combinedSpec[prop] = bProp;
         }
+        return true;
       })) {
         return null;
       }
