@@ -7,6 +7,7 @@ import { ArrayReader } from 'readers/array-reader';
 import { ExtractReader } from 'readers/extract-reader';
 import { EnumReader } from 'readers/enum-reader';
 import { EmptyObjectConstructor } from 'readers/object-reader';
+import { MapReader } from 'readers/map-reader';
 
 
 export namespace TsJson {
@@ -32,6 +33,10 @@ export namespace TsJson {
 
   export function enumeration(): EnumReader<never> {
     return EnumReader.create();
+  }
+
+  export function map<T>(valueReader: Reader<T>): MapReader<T> {
+    return new MapReader(valueReader);
   }
 
   export function obj(): EmptyObjectConstructor {

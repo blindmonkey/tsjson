@@ -182,7 +182,7 @@ class SetImpl<T> implements ISet<T> {
   }
 }
 
-function quote(s: string) {
+export function quote(s: string) {
   if (s.indexOf('\'') < 0) {
     return "'" + s + "'";
   }
@@ -211,9 +211,13 @@ export namespace Types {
     type: 'object';
     spec: null|{[k: string]: Type};
   }
+  export interface MapType {
+    type: 'map';
+    value: Type;
+  }
   export type NonNullPrimitiveType = StringType | NumberType | BooleanType;
   // type PrimitiveType = NullType | NonNullPrimitiveType;
-  export type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType;
+  export type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType;
   export type SimpleType = NonNullSimpleType | NullType;
 
   export interface UnionType {
@@ -255,6 +259,9 @@ export namespace Types {
   export function isNullable(a: Type): a is NullableType {
     return a.type === 'nullable';
   }
+  export function isMap(a: Type): a is MapType {
+    return a.type === 'map';
+  }
 
   function toStringInternal(a: Type, visited: Type[],
                             indices: {current: number, map: {[k: string]: number}}): string {
@@ -281,6 +288,8 @@ export namespace Types {
       return 'Number';
     } else if (isBoolean(a)) {
       return 'Boolean';
+    } else if (isMap(a)) {
+      return 'Map<' + toStringInternal(a.value, visited.concat([a]), indices) + '>';
     } else if (isNullable(a)) {
       const subtypeStr = toStringInternal(a.subtype, visited.concat([a]), indices);
       return 'Nullable<' + subtypeStr + '>';
@@ -324,6 +333,9 @@ export namespace Types {
     return { type: 'string', value: value };
   }
   export const Boolean: BooleanType = { type: 'boolean' };
+  export function Map(contained: Type): MapType {
+    return { type: 'map', value: contained };
+  }
   export function Nullable(subtype: Type): NullableType|NullType {
     while (subtype.type === 'nullable') {
       subtype = subtype.subtype;
@@ -375,6 +387,8 @@ export namespace Types {
       return true;
     } else if (isNullable(a) && isNullable(b)) {
       return equalsInternal(a.subtype, b.subtype, verified.concat([{a: a, b: b}]));
+    } else if (isMap(a) && isMap(b)) {
+      return equalsInternal(a.value, b.value, verified.concat([{a: a, b: b}]));
     } else if (isArray(a) && isArray(b)) {
       return equalsInternal(a.contained, b.contained, verified.concat([{a: a, b: b}]));
     } else if (isObject(a) && isObject(b)) {
@@ -446,6 +460,11 @@ export namespace Types {
     } else if (isArray(a)) {
       if (isArray(b)) {
         return a;
+      }
+    } else if (isMap(a) && isMap(b)) {
+      const combinedValue = combine(a.value, b.value);
+      if (combinedValue != null) {
+        return Map(combinedValue);
       }
     } else if (isObject(a) && isObject(b)) {
       const aSpec = a.spec;
