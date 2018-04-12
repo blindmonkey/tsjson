@@ -52,7 +52,7 @@ module.exports = {
       main: path.resolve(__dirname, 'dist', 'src', '**/*.d.ts'),
       // baseDir: pa,
       out: path.resolve(__dirname, 'dist', 'bundle.d.ts'),
-      removeSource: true,
+      // removeSource: true,
       outputAsModuleFolder: true // to use npm in-package typings
     })
     // new DtsBundlePlugin()
