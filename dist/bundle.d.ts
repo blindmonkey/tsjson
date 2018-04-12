@@ -11,18 +11,6 @@
 //   ../../readers/map-reader
 //   ../../result/result
 
-import * as errors from 'errors/decoding/decoding-error';
-import { Reader } from 'readers/reader.interface';
-import { OptionalReader } from 'readers/abstract-reader';
-import { PrimitiveReaders } from 'readers/primitive-readers';
-import { ArrayReader } from 'readers/array-reader';
-import { ExtractReader } from 'readers/extract-reader';
-import { EnumReader } from 'readers/enum-reader';
-import { EmptyObjectConstructor } from 'readers/object-reader';
-import { MapReader } from 'readers/map-reader';
-import { DecodingError } from 'errors/decoding/decoding-error';
-import { Result } from 'result/result';
-
 export interface ArrayChildError {
     type: 'array-error';
     index: number;
