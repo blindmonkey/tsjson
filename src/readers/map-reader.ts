@@ -1,8 +1,8 @@
-import { Reader } from './reader.interface';
 import { DecodingError, InvalidTypeError } from 'errors/decoding/decoding-error';
-
-import { Types, quote } from 'jstypes';
 import { Result } from 'result/result';
+
+import { Reader } from './reader.interface';
+import { Types, quote } from '../jstypes';
 
 export class MapReader<T> implements Reader<{ [k: string]: T }> {
   expectedType: Types.Type;

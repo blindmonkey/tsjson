@@ -8,6 +8,7 @@
 //   ../../readers/extract-reader
 //   ../../readers/enum-reader
 //   ../../readers/object-reader
+//   ../../readers/map-reader
 
 declare module 'tsjson' {
     import * as errors from 'errors/decoding/decoding-error';
@@ -18,6 +19,7 @@ declare module 'tsjson' {
     import { ExtractReader } from 'readers/extract-reader';
     import { EnumReader } from 'readers/enum-reader';
     import { EmptyObjectConstructor } from 'readers/object-reader';
+    import { MapReader } from 'readers/map-reader';
     export namespace TsJson {
         namespace Error {
             type DecodingError = errors.DecodingError;
@@ -29,6 +31,7 @@ declare module 'tsjson' {
         function array<T>(reader: Reader<T>): ArrayReader<T>;
         function extract<T>(property: string, reader: Reader<T>): ExtractReader<T>;
         function enumeration(): EnumReader<never>;
+        function map<T>(valueReader: Reader<T>): MapReader<T>;
         function obj(): EmptyObjectConstructor;
     }
 }
