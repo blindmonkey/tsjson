@@ -49,11 +49,13 @@ module.exports = {
     // })
     new DtsBundleWebpack({
       name: 'tsjson',
-      main: path.resolve(__dirname, 'dist', 'src', '**/*.d.ts'),
+      main: path.resolve(__dirname, 'dist', 'src', 'index.d.ts'),
       // baseDir: pa,
       out: path.resolve(__dirname, 'dist', 'bundle.d.ts'),
       // removeSource: true,
-      outputAsModuleFolder: true // to use npm in-package typings
+      // externals: true
+      referenceExternals: true
+      // outputAsModuleFolder: true // to use npm in-package typings
     })
     // new DtsBundlePlugin()
   ]
