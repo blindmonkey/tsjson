@@ -1,5 +1,5 @@
-import { DecodingError, ErrorGroup, ArrayChildError, InvalidTypeError } from 'errors/decoding/decoding-error';
-import { Result } from 'result/result';
+import { DecodingError, ErrorGroup, ArrayChildError, InvalidTypeError } from '../errors/decoding/decoding-error';
+import { Result } from '../result/result';
 
 import { AbstractReader } from './abstract-reader';
 import { Reader } from './reader.interface';

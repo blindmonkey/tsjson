@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "TypeScript JSON encoding/decoding",
   "main": "dist/bundle.js",
-  "types": "dist/src/out/out/bundle.d.ts",
+  "types": "dist/bundle.d.ts",
   "scripts": {
     "server": "npm run build && npx webpack browser/entry-point.js dist/src/index.js --output browser/bundle.js && npx node ./browser/server.js",
     "clean": "rm -rf ./dist",
