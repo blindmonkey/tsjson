@@ -1,3 +1,4 @@
+const DtsBundleWebpack = require('dts-bundle-webpack');
 var path = require('path');
 
 module.exports = {
@@ -22,5 +23,12 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist')
-  }
+  },
+  plugins: [
+    new DtsBundleWebpack({
+      name: 'tsjson',
+      main: './dist/src/index.d.ts',
+      out: path.resolve(__dirname, 'dist', 'bundle.d.ts')
+    })
+  ]
 }
