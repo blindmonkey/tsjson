@@ -84,7 +84,7 @@ declare module 'tsjson/readers/abstract-reader' {
         abstract read(obj: any): Result<T, DecodingError>;
         withDefault(value: T): DefaultReader<T>;
         asOptional(): OptionalReader<T>;
-        or<S>(other: Reader<S>): Reader<T | S>;
+        or<S>(other: Reader<S>): OrReader<T, S>;
     }
     export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
         expectedType: Types.Type;
