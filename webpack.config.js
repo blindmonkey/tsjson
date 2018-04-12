@@ -51,7 +51,7 @@ module.exports = {
       name: 'tsjson',
       main: path.resolve(__dirname, 'dist', 'src', 'index.d.ts'),
       // baseDir: pa,
-      out: path.resolve(__dirname, 'dist', 'bundle.d.ts'),
+      out: path.resolve(__dirname, 'dist', 'src', 'bundle.d.ts'),
       // removeSource: true,
       // externals: true
       referenceExternals: true
