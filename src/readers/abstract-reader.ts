@@ -16,7 +16,7 @@ export abstract class AbstractReader<T> implements Reader<T> {
     return new OptionalReader(this);
   }
 
-  or<S>(other: Reader<S>): Reader<T|S> {
+  or<S>(other: Reader<S>): OrReader<T, S> {
     return new OrReader(this, other);
   }
 }
