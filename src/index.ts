@@ -8,6 +8,7 @@ import { ExtractReader } from './readers/extract-reader';
 import { EnumReader } from './readers/enum-reader';
 import { EmptyObjectConstructor } from './readers/object-reader';
 import { MapReader } from './readers/map-reader';
+import { AnyReader } from './readers/any-reader';
 
 export { Reader } from './readers/reader.interface';
 export { AbstractReader } from './readers/abstract-reader'
@@ -22,6 +23,7 @@ export namespace TsJson {
   export const number = new PrimitiveReaders.NumberReader();
   export const string = new PrimitiveReaders.StringReader();
   export const boolean = new PrimitiveReaders.BooleanReader();
+  export const anything = new AnyReader();
 
   export function optional<T>(reader: Reader<T>): OptionalReader<T> {
     return new OptionalReader(reader);

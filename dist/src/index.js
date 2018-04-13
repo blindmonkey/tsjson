@@ -7,6 +7,7 @@ var extract_reader_1 = require("./readers/extract-reader");
 var enum_reader_1 = require("./readers/enum-reader");
 var object_reader_1 = require("./readers/object-reader");
 var map_reader_1 = require("./readers/map-reader");
+var any_reader_1 = require("./readers/any-reader");
 var abstract_reader_2 = require("./readers/abstract-reader");
 exports.AbstractReader = abstract_reader_2.AbstractReader;
 var jstypes_1 = require("./jstypes");
@@ -16,6 +17,7 @@ var TsJson;
     TsJson.number = new primitive_readers_1.PrimitiveReaders.NumberReader();
     TsJson.string = new primitive_readers_1.PrimitiveReaders.StringReader();
     TsJson.boolean = new primitive_readers_1.PrimitiveReaders.BooleanReader();
+    TsJson.anything = new any_reader_1.AnyReader();
     function optional(reader) {
         return new abstract_reader_1.OptionalReader(reader);
     }
