@@ -213,8 +213,10 @@ export namespace Types {
   }
   export interface NamedType {
     type: 'named';
-    name: string
-
+    name: string;
+  }
+  export interface AnyType {
+    type: 'any';
   }
   export interface MapType {
     type: 'map';
@@ -238,7 +240,7 @@ export namespace Types {
   export type NonNullableNonNullType = NonNullSimpleType | UnionType;
   export type NonNullableType = SimpleType | UnionType;
 
-  export type Type = NonUnionType | NonNullableType | NullType;
+  export type Type = NonUnionType | NonNullableType | NullType | AnyType;
 
   export function isNull(a: Type): a is NullType {
     return a.type === 'null';
@@ -270,6 +272,9 @@ export namespace Types {
   export function isNamed(a: Type): a is NamedType {
     return a.type === 'named';
   }
+  export function isAny(a: Type): a is AnyType {
+    return a.type === 'any';
+  }
 
   function toStringInternal(a: Type, visited: Type[],
                             indices: {current: number, map: {[k: string]: number}}): string {
@@ -294,6 +299,8 @@ export namespace Types {
       return 'String<' + quote(a.value) + '>';
     } else if (isNumber(a)) {
       return 'Number';
+    } else if (isAny(a)) {
+      return 'Any';
     } else if (isBoolean(a)) {
       return 'Boolean';
     } else if (isNamed(a)) {
@@ -336,6 +343,7 @@ export namespace Types {
     return toStringInternal(a, [], {current: 0, map: {}});
   }
 
+  export const Any: AnyType = { type: 'any' };
   export const Null: NullType = { type: 'null' };
   export const Number: NumberType = { type: 'number' };
   export const String: StringType = { type: 'string', value: null };
@@ -346,11 +354,12 @@ export namespace Types {
   export function Map(contained: Type): MapType {
     return { type: 'map', value: contained };
   }
-  export function Nullable(subtype: Type): NullableType|NullType {
+  export function Nullable(subtype: Type): NullableType|NullType|AnyType {
     while (subtype.type === 'nullable') {
       subtype = subtype.subtype;
     }
     if (isNull(subtype)) { return Null; }
+    if (isAny(subtype)) { return Any; }
     return { type: 'nullable', subtype: subtype };
   }
   export function Array(contained: Type): ArrayType {
@@ -365,15 +374,17 @@ export namespace Types {
   function allNullable(types: NonUnionType[]): types is NullableType[] {
     return types.every((t) => isNullable(t));
   }
-  export function Union(types: Type[]): UnionType | NullableType {
+  export function Union(types: Type[]): UnionType | NullableType | AnyType {
     const unpackedTypes: NonUnionType[] = [];
-    types.forEach((value) => {
-      if (isUnion(value)) {
+    for (const value of types) {
+      if (isAny(value)) {
+        return Any;
+      } else if (isUnion(value)) {
         value.types.forEach((subtype) => unpackedTypes.push(subtype));
       } else {
         unpackedTypes.push(value);
       }
-    });
+    }
     if (allNullable(unpackedTypes)) {
       const allSubtypes = unpackedTypes.map((t) => t.subtype);
       return Nullable(Union(allSubtypes)) as NullableType;
@@ -394,6 +405,8 @@ export namespace Types {
       return true;
     } else if (isString(a) && isString(b)) {
       return a.value === b.value;
+    } else if (isAny(a) && isAny(b)) {
+      return true;
     } else if (isNumber(a) && isNumber(b)) {
       return true;
     } else if (isBoolean(a) && isBoolean(b)) {
@@ -476,6 +489,8 @@ export namespace Types {
       if (isArray(b)) {
         return a;
       }
+    } else if (isAny(a) && isAny(b)) {
+      return a;
     } else if (isNamed(a) && isNamed(b)) {
       return a.name === b.name ? a : null;
     } else if (isMap(a) && isMap(b)) {
@@ -559,7 +574,7 @@ export namespace Types {
     return Union([a, b]);
   }
 
-  export function infer(obj: any): Type|null {
+  export function infer(obj: any): Type {
     if (typeof obj === 'number') {
       return Number;
     } else if (typeof obj === 'string') {
@@ -572,7 +587,6 @@ export namespace Types {
       const knownTypes: Type[] = [];
       for (let i = 0; i < obj.length; i++) {
         const inferred = infer(obj[i]);
-        if (inferred == null) return null;
         let found = false;
         for (let j = 0; j < knownTypes.length; j++) {
           if (equals(knownTypes[j], inferred)) {
@@ -591,7 +605,7 @@ export namespace Types {
     } else if (typeof obj === 'object') {
       return Object();
     }
-    return null;
+    return Any;
   }
 }
 

@@ -185,6 +185,10 @@ var Types;
         return a.type === 'named';
     }
     Types.isNamed = isNamed;
+    function isAny(a) {
+        return a.type === 'any';
+    }
+    Types.isAny = isAny;
     function toStringInternal(a, visited, indices) {
         for (var i = 0; i < visited.length; i++) {
             if (visited[i] === a) {
@@ -207,6 +211,9 @@ var Types;
         }
         else if (isNumber(a)) {
             return 'Number';
+        }
+        else if (isAny(a)) {
+            return 'Any';
         }
         else if (isBoolean(a)) {
             return 'Boolean';
@@ -258,6 +265,7 @@ var Types;
         return toStringInternal(a, [], { current: 0, map: {} });
     }
     Types.toString = toString;
+    Types.Any = { type: 'any' };
     Types.Null = { type: 'null' };
     Types.Number = { type: 'number' };
     Types.String = { type: 'string', value: null };
@@ -276,6 +284,9 @@ var Types;
         }
         if (isNull(subtype)) {
             return Types.Null;
+        }
+        if (isAny(subtype)) {
+            return Types.Any;
         }
         return { type: 'nullable', subtype: subtype };
     }
@@ -297,14 +308,18 @@ var Types;
     }
     function Union(types) {
         var unpackedTypes = [];
-        types.forEach(function (value) {
-            if (isUnion(value)) {
+        for (var _i = 0, types_1 = types; _i < types_1.length; _i++) {
+            var value = types_1[_i];
+            if (isAny(value)) {
+                return Types.Any;
+            }
+            else if (isUnion(value)) {
                 value.types.forEach(function (subtype) { return unpackedTypes.push(subtype); });
             }
             else {
                 unpackedTypes.push(value);
             }
-        });
+        }
         if (allNullable(unpackedTypes)) {
             var allSubtypes = unpackedTypes.map(function (t) { return t.subtype; });
             return Nullable(Union(allSubtypes));
@@ -324,6 +339,9 @@ var Types;
         }
         else if (isString(a) && isString(b)) {
             return a.value === b.value;
+        }
+        else if (isAny(a) && isAny(b)) {
+            return true;
         }
         else if (isNumber(a) && isNumber(b)) {
             return true;
@@ -423,6 +441,9 @@ var Types;
             if (isArray(b)) {
                 return a;
             }
+        }
+        else if (isAny(a) && isAny(b)) {
+            return a;
         }
         else if (isNamed(a) && isNamed(b)) {
             return a.name === b.name ? a : null;
@@ -537,8 +558,6 @@ var Types;
             var knownTypes = [];
             for (var i = 0; i < obj.length; i++) {
                 var inferred = infer(obj[i]);
-                if (inferred == null)
-                    return null;
                 var found = false;
                 for (var j = 0; j < knownTypes.length; j++) {
                     if (equals(knownTypes[j], inferred)) {
@@ -558,7 +577,7 @@ var Types;
         else if (typeof obj === 'object') {
             return Object();
         }
-        return null;
+        return Types.Any;
     }
     Types.infer = infer;
 })(Types = exports.Types || (exports.Types = {}));
