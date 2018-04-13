@@ -211,13 +211,18 @@ export namespace Types {
     type: 'object';
     spec: null|{[k: string]: Type};
   }
+  export interface NamedType {
+    type: 'named';
+    name: string
+
+  }
   export interface MapType {
     type: 'map';
     value: Type;
   }
   export type NonNullPrimitiveType = StringType | NumberType | BooleanType;
   // type PrimitiveType = NullType | NonNullPrimitiveType;
-  export type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType;
+  export type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType | NamedType;
   export type SimpleType = NonNullSimpleType | NullType;
 
   export interface UnionType {
@@ -262,6 +267,9 @@ export namespace Types {
   export function isMap(a: Type): a is MapType {
     return a.type === 'map';
   }
+  export function isNamed(a: Type): a is NamedType {
+    return a.type === 'named';
+  }
 
   function toStringInternal(a: Type, visited: Type[],
                             indices: {current: number, map: {[k: string]: number}}): string {
@@ -288,6 +296,8 @@ export namespace Types {
       return 'Number';
     } else if (isBoolean(a)) {
       return 'Boolean';
+    } else if (isNamed(a)) {
+      return 'Named<' + a.name + '>';
     } else if (isMap(a)) {
       return 'Map<' + toStringInternal(a.value, visited.concat([a]), indices) + '>';
     } else if (isNullable(a)) {
@@ -349,6 +359,9 @@ export namespace Types {
   export function Object(spec?: null|{[k:string]: Type}): ObjectType {
     return { type: 'object', spec: spec || null };
   }
+  export function Named(name: string): NamedType {
+    return { type: 'named', name: name };
+  }
   function allNullable(types: NonUnionType[]): types is NullableType[] {
     return types.every((t) => isNullable(t));
   }
@@ -385,6 +398,8 @@ export namespace Types {
       return true;
     } else if (isBoolean(a) && isBoolean(b)) {
       return true;
+    } else if (isNamed(a) && isNamed(b)) {
+      return a.name === b.name;
     } else if (isNullable(a) && isNullable(b)) {
       return equalsInternal(a.subtype, b.subtype, verified.concat([{a: a, b: b}]));
     } else if (isMap(a) && isMap(b)) {
@@ -461,6 +476,8 @@ export namespace Types {
       if (isArray(b)) {
         return a;
       }
+    } else if (isNamed(a) && isNamed(b)) {
+      return a.name === b.name ? a : null;
     } else if (isMap(a) && isMap(b)) {
       const combinedValue = combine(a.value, b.value);
       if (combinedValue != null) {

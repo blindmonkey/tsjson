@@ -9,6 +9,10 @@ import { EnumReader } from './readers/enum-reader';
 import { EmptyObjectConstructor } from './readers/object-reader';
 import { MapReader } from './readers/map-reader';
 
+export { Reader } from './readers/reader.interface';
+export { AbstractReader } from './readers/abstract-reader'
+export { Types } from './jstypes';
+
 
 export namespace TsJson {
   export namespace Error {
