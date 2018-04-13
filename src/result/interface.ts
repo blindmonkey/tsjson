@@ -4,6 +4,9 @@ export interface Result<Success, Failure> {
   isSuccess(): this is ResultSuccess<Success, Failure>
   isFailure(): this is ResultFailure<Success, Failure>
 
+  assertSuccess(): Success
+  assertFailure(): Failure
+
   map<Output>(
     success: (value: Success) => Output,
     failure: (value: Failure) => Output

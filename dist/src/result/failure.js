@@ -7,6 +7,8 @@ var ResultFailureImpl = /** @class */ (function () {
     }
     ResultFailureImpl.prototype.isSuccess = function () { return false; };
     ResultFailureImpl.prototype.isFailure = function () { return true; };
+    ResultFailureImpl.prototype.assertSuccess = function () { throw Error('Result is not a Success result.'); };
+    ResultFailureImpl.prototype.assertFailure = function () { return this.error; };
     ResultFailureImpl.prototype.map = function (success, failure) {
         return failure(this.error);
     };

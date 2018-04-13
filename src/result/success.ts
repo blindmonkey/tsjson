@@ -9,6 +9,8 @@ export class ResultSuccessImpl<T, E> implements ResultSuccess<T, E> {
 
   isSuccess(): this is ResultSuccess<T, E> { return true }
   isFailure(): this is ResultFailure<T, E> { return false }
+  assertSuccess(): T { return this.value }
+  assertFailure(): E { throw Error('Result is not a Failure result.') }
 
   map<Output>(
     success: (value: T) => Output,
