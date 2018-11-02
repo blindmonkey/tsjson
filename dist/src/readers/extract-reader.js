@@ -28,10 +28,10 @@ var ExtractReader = /** @class */ (function (_super) {
         _this.reader = reader;
         var obj = {};
         obj[property] = reader.expectedType;
-        console.log('Extract', property, 'of type', reader.expectedType);
+        // console.log('Extract', property, 'of type', reader.expectedType);
         _this.expectedType = jstypes_1.Types.Object(obj);
-        console.log('Computed expected type is', _this.expectedType);
         return _this;
+        // console.log('Computed expected type is', this.expectedType);
     }
     ExtractReader.prototype.read = function (obj) {
         var _this = this;
