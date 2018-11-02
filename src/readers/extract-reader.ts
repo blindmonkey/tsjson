@@ -15,9 +15,9 @@ export class ExtractReader<T> extends AbstractReader<T> implements Reader<T> {
     this.reader = reader;
     const obj: {[k:string]: Types.Type} = {};
     obj[property] = reader.expectedType;
-    console.log('Extract', property, 'of type', reader.expectedType);
+    // console.log('Extract', property, 'of type', reader.expectedType);
     this.expectedType = Types.Object(obj);
-    console.log('Computed expected type is', this.expectedType);
+    // console.log('Computed expected type is', this.expectedType);
   }
   read(obj: any): Result<T, errors.DecodingError> {
     if (obj && Object.hasOwnProperty.call(obj, this.property)) {
