@@ -385,7 +385,7 @@ export namespace Types {
         unpackedTypes.push(value);
       }
     }
-    if (allNullable(unpackedTypes)) {
+    if (unpackedTypes.length > 0 && allNullable(unpackedTypes)) {
       const allSubtypes = unpackedTypes.map((t) => t.subtype);
       return Nullable(Union(allSubtypes)) as NullableType;
     }
