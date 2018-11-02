@@ -50,9 +50,7 @@ export class ObjectConstructor<S extends string, U, Base> implements ObjectConst
     // expectedTypes[property] = reader.expectedType;
     // expectedTypePairs.push(Types.quoteAndEscape('"', property) + ': ' + reader.expectedType);
     // this.expectedTypes = expectedTypes;
-    console.log('Combining', reader.expectedType, 'and', base.expectedType);
     const combinedType = Types.combine(base.expectedType, reader.expectedType);
-    console.log('Combined:', combinedType);
     if (combinedType == null) {
       throw Error('Unable to combine types: ' + base.expectedType.toString() + ' and ' + reader.expectedType.toString());
     }
