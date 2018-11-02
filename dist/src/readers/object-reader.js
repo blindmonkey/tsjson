@@ -58,9 +58,7 @@ var ObjectConstructor = /** @class */ (function () {
         // expectedTypes[property] = reader.expectedType;
         // expectedTypePairs.push(Types.quoteAndEscape('"', property) + ': ' + reader.expectedType);
         // this.expectedTypes = expectedTypes;
-        console.log('Combining', reader.expectedType, 'and', base.expectedType);
         var combinedType = jstypes_1.Types.combine(base.expectedType, reader.expectedType);
-        console.log('Combined:', combinedType);
         if (combinedType == null) {
             throw Error('Unable to combine types: ' + base.expectedType.toString() + ' and ' + reader.expectedType.toString());
         }
