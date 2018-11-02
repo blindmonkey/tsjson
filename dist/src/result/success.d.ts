@@ -5,6 +5,8 @@ export declare class ResultSuccessImpl<T, E> implements ResultSuccess<T, E> {
     constructor(value: T);
     isSuccess(): this is ResultSuccess<T, E>;
     isFailure(): this is ResultFailure<T, E>;
+    assertSuccess(): T;
+    assertFailure(): E;
     map<Output>(success: (value: T) => Output, failure: (error: E) => Output): Output;
     flatMap<OutSuccess, OutFailure>(success: (value: T) => Result<OutSuccess, OutFailure>, failure: (error: E) => Result<OutSuccess, OutFailure>): Result<OutSuccess, OutFailure>;
     mapSuccess<OutSuccess>(f: (value: T) => OutSuccess): Result<OutSuccess, E>;

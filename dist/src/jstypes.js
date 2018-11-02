@@ -142,6 +142,7 @@ function quote(s) {
     }
     return '"' + s.replace('"', '\\"') + '"';
 }
+exports.quote = quote;
 var Types;
 (function (Types) {
     function isNull(a) {
@@ -176,6 +177,18 @@ var Types;
         return a.type === 'nullable';
     }
     Types.isNullable = isNullable;
+    function isMap(a) {
+        return a.type === 'map';
+    }
+    Types.isMap = isMap;
+    function isNamed(a) {
+        return a.type === 'named';
+    }
+    Types.isNamed = isNamed;
+    function isAny(a) {
+        return a.type === 'any';
+    }
+    Types.isAny = isAny;
     function toStringInternal(a, visited, indices) {
         for (var i = 0; i < visited.length; i++) {
             if (visited[i] === a) {
@@ -199,8 +212,17 @@ var Types;
         else if (isNumber(a)) {
             return 'Number';
         }
+        else if (isAny(a)) {
+            return 'Any';
+        }
         else if (isBoolean(a)) {
             return 'Boolean';
+        }
+        else if (isNamed(a)) {
+            return 'Named<' + a.name + '>';
+        }
+        else if (isMap(a)) {
+            return 'Map<' + toStringInternal(a.value, visited.concat([a]), indices) + '>';
         }
         else if (isNullable(a)) {
             var subtypeStr = toStringInternal(a.subtype, visited.concat([a]), indices);
@@ -243,6 +265,7 @@ var Types;
         return toStringInternal(a, [], { current: 0, map: {} });
     }
     Types.toString = toString;
+    Types.Any = { type: 'any' };
     Types.Null = { type: 'null' };
     Types.Number = { type: 'number' };
     Types.String = { type: 'string', value: null };
@@ -251,12 +274,19 @@ var Types;
     }
     Types.StringValue = StringValue;
     Types.Boolean = { type: 'boolean' };
+    function Map(contained) {
+        return { type: 'map', value: contained };
+    }
+    Types.Map = Map;
     function Nullable(subtype) {
         while (subtype.type === 'nullable') {
             subtype = subtype.subtype;
         }
         if (isNull(subtype)) {
             return Types.Null;
+        }
+        if (isAny(subtype)) {
+            return Types.Any;
         }
         return { type: 'nullable', subtype: subtype };
     }
@@ -269,19 +299,27 @@ var Types;
         return { type: 'object', spec: spec || null };
     }
     Types.Object = Object;
+    function Named(name) {
+        return { type: 'named', name: name };
+    }
+    Types.Named = Named;
     function allNullable(types) {
         return types.every(function (t) { return isNullable(t); });
     }
     function Union(types) {
         var unpackedTypes = [];
-        types.forEach(function (value) {
-            if (isUnion(value)) {
+        for (var _i = 0, types_1 = types; _i < types_1.length; _i++) {
+            var value = types_1[_i];
+            if (isAny(value)) {
+                return Types.Any;
+            }
+            else if (isUnion(value)) {
                 value.types.forEach(function (subtype) { return unpackedTypes.push(subtype); });
             }
             else {
                 unpackedTypes.push(value);
             }
-        });
+        }
         if (allNullable(unpackedTypes)) {
             var allSubtypes = unpackedTypes.map(function (t) { return t.subtype; });
             return Nullable(Union(allSubtypes));
@@ -302,14 +340,23 @@ var Types;
         else if (isString(a) && isString(b)) {
             return a.value === b.value;
         }
+        else if (isAny(a) && isAny(b)) {
+            return true;
+        }
         else if (isNumber(a) && isNumber(b)) {
             return true;
         }
         else if (isBoolean(a) && isBoolean(b)) {
             return true;
         }
+        else if (isNamed(a) && isNamed(b)) {
+            return a.name === b.name;
+        }
         else if (isNullable(a) && isNullable(b)) {
             return equalsInternal(a.subtype, b.subtype, verified.concat([{ a: a, b: b }]));
+        }
+        else if (isMap(a) && isMap(b)) {
+            return equalsInternal(a.value, b.value, verified.concat([{ a: a, b: b }]));
         }
         else if (isArray(a) && isArray(b)) {
             return equalsInternal(a.contained, b.contained, verified.concat([{ a: a, b: b }]));
@@ -393,6 +440,18 @@ var Types;
         else if (isArray(a)) {
             if (isArray(b)) {
                 return a;
+            }
+        }
+        else if (isAny(a) && isAny(b)) {
+            return a;
+        }
+        else if (isNamed(a) && isNamed(b)) {
+            return a.name === b.name ? a : null;
+        }
+        else if (isMap(a) && isMap(b)) {
+            var combinedValue = combine(a.value, b.value);
+            if (combinedValue != null) {
+                return Map(combinedValue);
             }
         }
         else if (isObject(a) && isObject(b)) {
@@ -499,8 +558,6 @@ var Types;
             var knownTypes = [];
             for (var i = 0; i < obj.length; i++) {
                 var inferred = infer(obj[i]);
-                if (inferred == null)
-                    return null;
                 var found = false;
                 for (var j = 0; j < knownTypes.length; j++) {
                     if (equals(knownTypes[j], inferred)) {
@@ -520,7 +577,7 @@ var Types;
         else if (typeof obj === 'object') {
             return Object();
         }
-        return null;
+        return Types.Any;
     }
     Types.infer = infer;
 })(Types = exports.Types || (exports.Types = {}));

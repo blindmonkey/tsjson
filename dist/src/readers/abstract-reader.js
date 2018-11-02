@@ -10,7 +10,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var result_1 = require("result/result");
+var decoding_error_1 = require("../errors/decoding/decoding-error");
+var result_1 = require("../result/result");
 var jstypes_1 = require("../jstypes");
 var AbstractReader = /** @class */ (function () {
     function AbstractReader() {
@@ -20,6 +21,9 @@ var AbstractReader = /** @class */ (function () {
     };
     AbstractReader.prototype.asOptional = function () {
         return new OptionalReader(this);
+    };
+    AbstractReader.prototype.or = function (other) {
+        return new OrReader(this, other);
     };
     return AbstractReader;
 }());
@@ -41,6 +45,30 @@ var DefaultReader = /** @class */ (function (_super) {
     return DefaultReader;
 }(AbstractReader));
 exports.DefaultReader = DefaultReader;
+function inferOrUnknown(obj) {
+    var inferred = jstypes_1.Types.infer(obj);
+    if (inferred != null) {
+        return jstypes_1.Types.toString(inferred);
+    }
+    return 'Unknown';
+}
+var OrReader = /** @class */ (function (_super) {
+    __extends(OrReader, _super);
+    function OrReader(readerA, readerB) {
+        var _this = _super.call(this) || this;
+        _this.readerA = readerA;
+        _this.readerB = readerB;
+        _this.expectedType = jstypes_1.Types.Union([readerA.expectedType, readerB.expectedType]);
+        return _this;
+    }
+    OrReader.prototype.read = function (obj) {
+        var _this = this;
+        return this.readerA.read(obj).map(function (success) { return result_1.Result.success(success); }, function (failure) { return _this.readerB.read(obj)
+            .mapFailure(function (error) { return decoding_error_1.InvalidTypeError.create(obj, jstypes_1.Types.toString(_this.expectedType), inferOrUnknown(obj), decoding_error_1.ErrorGroup.create(obj, [failure, error])); }); });
+    };
+    return OrReader;
+}(AbstractReader));
+exports.OrReader = OrReader;
 var OptionalReader = /** @class */ (function (_super) {
     __extends(OptionalReader, _super);
     function OptionalReader(reader) {

@@ -17,7 +17,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var errors = __importStar(require("errors/decoding/decoding-error"));
+var errors = __importStar(require("../errors/decoding/decoding-error"));
 var abstract_reader_1 = require("./abstract-reader");
 var jstypes_1 = require("../jstypes");
 var ExtractReader = /** @class */ (function (_super) {

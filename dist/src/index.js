@@ -1,16 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var abstract_reader_1 = require("readers/abstract-reader");
-var primitive_readers_1 = require("readers/primitive-readers");
-var array_reader_1 = require("readers/array-reader");
-var extract_reader_1 = require("readers/extract-reader");
-var enum_reader_1 = require("readers/enum-reader");
-var object_reader_1 = require("readers/object-reader");
+var abstract_reader_1 = require("./readers/abstract-reader");
+var primitive_readers_1 = require("./readers/primitive-readers");
+var array_reader_1 = require("./readers/array-reader");
+var extract_reader_1 = require("./readers/extract-reader");
+var enum_reader_1 = require("./readers/enum-reader");
+var object_reader_1 = require("./readers/object-reader");
+var map_reader_1 = require("./readers/map-reader");
+var any_reader_1 = require("./readers/any-reader");
+var abstract_reader_2 = require("./readers/abstract-reader");
+exports.AbstractReader = abstract_reader_2.AbstractReader;
+var jstypes_1 = require("./jstypes");
+exports.Types = jstypes_1.Types;
 var TsJson;
 (function (TsJson) {
     TsJson.number = new primitive_readers_1.PrimitiveReaders.NumberReader();
     TsJson.string = new primitive_readers_1.PrimitiveReaders.StringReader();
     TsJson.boolean = new primitive_readers_1.PrimitiveReaders.BooleanReader();
+    TsJson.anything = new any_reader_1.AnyReader();
     function optional(reader) {
         return new abstract_reader_1.OptionalReader(reader);
     }
@@ -27,6 +34,10 @@ var TsJson;
         return enum_reader_1.EnumReader.create();
     }
     TsJson.enumeration = enumeration;
+    function map(valueReader) {
+        return new map_reader_1.MapReader(valueReader);
+    }
+    TsJson.map = map;
     function obj() {
         return new object_reader_1.EmptyObjectConstructor();
     }

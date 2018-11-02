@@ -10,8 +10,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var decoding_error_1 = require("errors/decoding/decoding-error");
-var result_1 = require("result/result");
+var decoding_error_1 = require("../errors/decoding/decoding-error");
+var result_1 = require("../result/result");
 var abstract_reader_1 = require("./abstract-reader");
 var jstypes_1 = require("../jstypes");
 var ArrayReader = /** @class */ (function (_super) {

@@ -1,3 +1,4 @@
+export declare function quote(s: string): string;
 export declare namespace Types {
     interface NullType {
         type: 'null';
@@ -22,8 +23,19 @@ export declare namespace Types {
             [k: string]: Type;
         };
     }
+    interface NamedType {
+        type: 'named';
+        name: string;
+    }
+    interface AnyType {
+        type: 'any';
+    }
+    interface MapType {
+        type: 'map';
+        value: Type;
+    }
     type NonNullPrimitiveType = StringType | NumberType | BooleanType;
-    type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType;
+    type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType | NamedType;
     type SimpleType = NonNullSimpleType | NullType;
     interface UnionType {
         type: 'union';
@@ -36,7 +48,7 @@ export declare namespace Types {
     type NonUnionType = SimpleType | NullableType;
     type NonNullableNonNullType = NonNullSimpleType | UnionType;
     type NonNullableType = SimpleType | UnionType;
-    type Type = NonUnionType | NonNullableType | NullType;
+    type Type = NonUnionType | NonNullableType | NullType | AnyType;
     function isNull(a: Type): a is NullType;
     function isString(a: Type): a is StringType;
     function isNumber(a: Type): a is NumberType;
@@ -45,18 +57,24 @@ export declare namespace Types {
     function isObject(a: Type): a is ObjectType;
     function isUnion(a: Type): a is UnionType;
     function isNullable(a: Type): a is NullableType;
+    function isMap(a: Type): a is MapType;
+    function isNamed(a: Type): a is NamedType;
+    function isAny(a: Type): a is AnyType;
     function toString(a: Type): string;
+    const Any: AnyType;
     const Null: NullType;
     const Number: NumberType;
     const String: StringType;
     function StringValue(value: string): StringType;
     const Boolean: BooleanType;
-    function Nullable(subtype: Type): NullableType | NullType;
+    function Map(contained: Type): MapType;
+    function Nullable(subtype: Type): NullableType | NullType | AnyType;
     function Array(contained: Type): ArrayType;
     function Object(spec?: null | {
         [k: string]: Type;
     }): ObjectType;
-    function Union(types: Type[]): UnionType | NullableType;
+    function Named(name: string): NamedType;
+    function Union(types: Type[]): UnionType | NullableType | AnyType;
     function equals(a: Type, b: Type): boolean;
     /**
      * This is used for building up a type. It's the equivalent of `&` in TypeScript.
@@ -70,5 +88,5 @@ export declare namespace Types {
      * since we can always default to a union type.
      */
     function unify(a: Type, b: Type): Type;
-    function infer(obj: any): Type | null;
+    function infer(obj: any): Type;
 }

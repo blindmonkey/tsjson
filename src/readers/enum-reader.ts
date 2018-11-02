@@ -1,5 +1,5 @@
-import * as errors from 'errors/decoding/decoding-error';
-import { Result } from 'result/result';
+import * as errors from '../errors/decoding/decoding-error';
+import { Result } from '../result/result';
 
 import { AbstractReader } from './abstract-reader'
 import { Reader } from './reader.interface';
@@ -84,10 +84,10 @@ export class EnumReader<T extends string> extends AbstractReader<T> implements R
   static create(): EnumReader<never> {
     return new EnumReader(new EmptyEnumReader());
   }
-  case<S extends string>(s: S): EnumReader<T|S> {
+  public case<S extends string>(s: S): EnumReader<T|S> {
     return new EnumReader(this.base.case(s));
   }
-  read(obj: any): Result<T, errors.DecodingError> {
+  public read(obj: any): Result<T, errors.DecodingError> {
     return this.base.read(obj).mapFailure((failure) => {
       if (failure.type === 'enum-no-match') {
         const inferred = Types.infer(obj);
