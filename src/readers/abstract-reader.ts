@@ -21,23 +21,6 @@ export abstract class AbstractReader<T> implements Reader<T> {
   }
 }
 
-export class OrReader<A, B> extends AbstractReader<A|B> implements Reader<A|B> {
-  public expectedType: Types.Type;
-  private readerA: Reader<A>;
-  private readerB: Reader<B>;
-  constructor(readerA: Reader<A>, readerB: Reader<B>) {
-    super();
-    this.readerA = readerA;
-    this.readerB = readerB;
-    this.expectedType = Types.Union([readerA.expectedType, readerB.expectedType]);
-  }
-  public read(obj: any): Result<A|B, DecodingError> {
-    return this.readerA.read(obj).map<Result<A|B, DecodingError>>(
-      (success) => Result.success(success),
-      (failure) => this.readerB.read(obj));
-  }
-}
-
 export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
   expectedType: Types.Type;
   private reader: Reader<T>;

@@ -320,7 +320,7 @@ var Types;
                 unpackedTypes.push(value);
             }
         }
-        if (allNullable(unpackedTypes)) {
+        if (unpackedTypes.length > 0 && allNullable(unpackedTypes)) {
             var allSubtypes = unpackedTypes.map(function (t) { return t.subtype; });
             return Nullable(Union(allSubtypes));
         }

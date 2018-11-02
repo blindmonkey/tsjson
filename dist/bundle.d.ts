@@ -10,6 +10,10 @@ declare module 'tsjson' {
     import { EnumReader } from 'tsjson/readers/enum-reader';
     import { EmptyObjectConstructor } from 'tsjson/readers/object-reader';
     import { MapReader } from 'tsjson/readers/map-reader';
+    import { AnyReader } from 'tsjson/readers/any-reader';
+    export { Reader } from 'tsjson/readers/reader.interface';
+    export { AbstractReader } from 'tsjson/readers/abstract-reader';
+    export { Types } from 'tsjson/jstypes';
     export namespace TsJson {
         namespace Error {
             type DecodingError = errors.DecodingError;
@@ -17,6 +21,7 @@ declare module 'tsjson' {
         const number: PrimitiveReaders.NumberReader;
         const string: PrimitiveReaders.StringReader;
         const boolean: PrimitiveReaders.BooleanReader;
+        const anything: AnyReader;
         function optional<T>(reader: Reader<T>): OptionalReader<T>;
         function array<T>(reader: Reader<T>): ArrayReader<T>;
         function extract<T>(property: string, reader: Reader<T>): ExtractReader<T>;
@@ -229,13 +234,15 @@ declare module 'tsjson/readers/map-reader' {
     }
 }
 
-declare module 'tsjson/result/result' {
-    import { Result as R } from 'tsjson/result/interface';
-    export type Result<Success, Failure> = R<Success, Failure>;
-    export namespace Result {
-        function success<T, E>(value: T): Result<T, E>;
-        function failure<T, E>(value: E): Result<T, E>;
-        function all<T, E>(results: Result<T, E>[]): Result<T[], E[]>;
+declare module 'tsjson/readers/any-reader' {
+    import * as errors from 'tsjson/errors/decoding/decoding-error';
+    import { Reader } from 'tsjson/readers/reader.interface';
+    import { AbstractReader } from 'tsjson/readers/abstract-reader';
+    import { Types } from 'tsjson/jstypes';
+    import { Result } from 'tsjson/result/result';
+    export class AnyReader extends AbstractReader<any> implements Reader<any> {
+        expectedType: Types.AnyType;
+        read(obj: any): Result<any, errors.DecodingError>;
     }
 }
 
@@ -265,12 +272,19 @@ declare module 'tsjson/jstypes' {
                             [k: string]: Type;
                     };
             }
+            interface NamedType {
+                    type: 'named';
+                    name: string;
+            }
+            interface AnyType {
+                    type: 'any';
+            }
             interface MapType {
                     type: 'map';
                     value: Type;
             }
             type NonNullPrimitiveType = StringType | NumberType | BooleanType;
-            type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType;
+            type NonNullSimpleType = NonNullPrimitiveType | ArrayType | ObjectType | MapType | NamedType;
             type SimpleType = NonNullSimpleType | NullType;
             interface UnionType {
                     type: 'union';
@@ -283,7 +297,7 @@ declare module 'tsjson/jstypes' {
             type NonUnionType = SimpleType | NullableType;
             type NonNullableNonNullType = NonNullSimpleType | UnionType;
             type NonNullableType = SimpleType | UnionType;
-            type Type = NonUnionType | NonNullableType | NullType;
+            type Type = NonUnionType | NonNullableType | NullType | AnyType;
             function isNull(a: Type): a is NullType;
             function isString(a: Type): a is StringType;
             function isNumber(a: Type): a is NumberType;
@@ -293,19 +307,23 @@ declare module 'tsjson/jstypes' {
             function isUnion(a: Type): a is UnionType;
             function isNullable(a: Type): a is NullableType;
             function isMap(a: Type): a is MapType;
+            function isNamed(a: Type): a is NamedType;
+            function isAny(a: Type): a is AnyType;
             function toString(a: Type): string;
+            const Any: AnyType;
             const Null: NullType;
             const Number: NumberType;
             const String: StringType;
             function StringValue(value: string): StringType;
             const Boolean: BooleanType;
             function Map(contained: Type): MapType;
-            function Nullable(subtype: Type): NullableType | NullType;
+            function Nullable(subtype: Type): NullableType | NullType | AnyType;
             function Array(contained: Type): ArrayType;
             function Object(spec?: null | {
                     [k: string]: Type;
             }): ObjectType;
-            function Union(types: Type[]): UnionType | NullableType;
+            function Named(name: string): NamedType;
+            function Union(types: Type[]): UnionType | NullableType | AnyType;
             function equals(a: Type, b: Type): boolean;
             /**
                 * This is used for building up a type. It's the equivalent of `&` in TypeScript.
@@ -319,7 +337,17 @@ declare module 'tsjson/jstypes' {
                 * since we can always default to a union type.
                 */
             function unify(a: Type, b: Type): Type;
-            function infer(obj: any): Type | null;
+            function infer(obj: any): Type;
+    }
+}
+
+declare module 'tsjson/result/result' {
+    import { Result as R } from 'tsjson/result/interface';
+    export type Result<Success, Failure> = R<Success, Failure>;
+    export namespace Result {
+        function success<T, E>(value: T): Result<T, E>;
+        function failure<T, E>(value: E): Result<T, E>;
+        function all<T, E>(results: Result<T, E>[]): Result<T[], E[]>;
     }
 }
 
@@ -328,6 +356,8 @@ declare module 'tsjson/result/interface' {
         type: 'success' | 'failure';
         isSuccess(): this is ResultSuccess<Success, Failure>;
         isFailure(): this is ResultFailure<Success, Failure>;
+        assertSuccess(): Success;
+        assertFailure(): Failure;
         map<Output>(success: (value: Success) => Output, failure: (value: Failure) => Output): Output;
         flatMap<OutSuccess, OutFailure>(success: (value: Success) => Result<OutSuccess, OutFailure>, failure: (error: Failure) => Result<OutSuccess, OutFailure>): Result<OutSuccess, OutFailure>;
         mapSuccess<OutSuccess>(f: (value: Success) => OutSuccess): Result<OutSuccess, Failure>;
