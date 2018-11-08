@@ -4,6 +4,7 @@ import { AbstractReader } from './abstract-reader';
 import { Reader } from './reader.interface';
 import { Types } from '../jstypes';
 export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
+    Type: T;
     expectedType: Types.Type;
     isEmpty(): this is EmptyObjectConstructor;
     put<S extends string, U>(s: S & string, reader: Reader<U>): ObjectConstructorInterface<{
@@ -15,6 +16,7 @@ export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
     read(obj: any): Result<T, errors.DecodingError>;
 }
 export declare class EmptyObjectConstructor extends AbstractReader<{}> implements ObjectConstructorInterface<{}> {
+    Type: {};
     expectedType: Types.ObjectType;
     isEmpty(): this is EmptyObjectConstructor;
     put<S extends string, U>(s: S, reader: Reader<U>): ObjectConstructorInterface<{
@@ -28,6 +30,9 @@ export declare class EmptyObjectConstructor extends AbstractReader<{}> implement
 export declare class ObjectConstructor<S extends string, U, Base> implements ObjectConstructorInterface<{
     [s in S]: U;
 } & Base> {
+    Type: {
+        [s in S]: U;
+    } & Base;
     expectedType: Types.Type;
     private property;
     private reader;

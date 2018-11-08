@@ -5,6 +5,9 @@ import { Types } from '../jstypes';
 export declare class MapReader<T> implements Reader<{
     [k: string]: T;
 }> {
+    readonly Type: {
+        [k: string]: T;
+    };
     expectedType: Types.Type;
     private valueReader;
     constructor(valueReader: Reader<T>);

@@ -18,6 +18,7 @@ declare module 'tsjson' {
         namespace Error {
             type DecodingError = errors.DecodingError;
         }
+        type TypeOf<T extends Reader<any>> = T['Type'];
         const number: PrimitiveReaders.NumberReader;
         const string: PrimitiveReaders.StringReader;
         const boolean: PrimitiveReaders.BooleanReader;
@@ -74,6 +75,7 @@ declare module 'tsjson/readers/reader.interface' {
     import { Result } from 'tsjson/result/result';
     import { Types } from 'tsjson/jstypes';
     export interface Reader<T> {
+        Type: T;
         expectedType: Types.Type;
         read(obj: any): Result<T, DecodingError>;
     }
@@ -85,6 +87,7 @@ declare module 'tsjson/readers/abstract-reader' {
     import { Reader } from 'tsjson/readers/reader.interface';
     import { Types } from 'tsjson/jstypes';
     export abstract class AbstractReader<T> implements Reader<T> {
+        readonly Type: T;
         abstract expectedType: Types.Type;
         abstract read(obj: any): Result<T, DecodingError>;
         withDefault(value: T): DefaultReader<T>;
@@ -92,16 +95,19 @@ declare module 'tsjson/readers/abstract-reader' {
         or<S>(other: Reader<S>): OrReader<T, S>;
     }
     export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
+        readonly Type: T;
         expectedType: Types.Type;
         constructor(reader: Reader<T>, defaultValue: T);
         read(obj: any): Result<T, DecodingError>;
     }
     export class OrReader<A, B> extends AbstractReader<A | B> implements Reader<A | B> {
+        readonly Type: A | B;
         expectedType: Types.Type;
         constructor(readerA: Reader<A>, readerB: Reader<B>);
         read(obj: any): Result<A | B, DecodingError>;
     }
     export class OptionalReader<T> extends DefaultReader<T | null> {
+        readonly Type: T | null;
         constructor(reader: Reader<T>);
     }
 }
@@ -114,14 +120,17 @@ declare module 'tsjson/readers/primitive-readers' {
     import { Types } from 'tsjson/jstypes';
     export namespace PrimitiveReaders {
         class BooleanReader extends AbstractReader<boolean> implements Reader<boolean> {
+            Type: boolean;
             expectedType: Types.BooleanType;
             read(obj: any): Result<boolean, DecodingError>;
         }
         class StringReader extends AbstractReader<string> implements Reader<string> {
+            Type: string;
             expectedType: Types.StringType;
             read(obj: any): Result<string, DecodingError>;
         }
         class NumberReader extends AbstractReader<number> implements Reader<number> {
+            Type: number;
             expectedType: Types.NumberType;
             read(obj: any): Result<number, DecodingError>;
         }
@@ -135,6 +144,7 @@ declare module 'tsjson/readers/array-reader' {
     import { Reader } from 'tsjson/readers/reader.interface';
     import { Types } from 'tsjson/jstypes';
     export class ArrayReader<T> extends AbstractReader<T[]> implements Reader<T[]> {
+        readonly Type: T[];
         expectedType: Types.ArrayType;
         constructor(reader: Reader<T>);
         read(obj: any): Result<T[], DecodingError>;
@@ -148,6 +158,7 @@ declare module 'tsjson/readers/extract-reader' {
     import { Reader } from 'tsjson/readers/reader.interface';
     import { Types } from 'tsjson/jstypes';
     export class ExtractReader<T> extends AbstractReader<T> implements Reader<T> {
+        Type: T;
         expectedType: Types.Type;
         constructor(property: string, reader: Reader<T>);
         read(obj: any): Result<T, errors.DecodingError>;
@@ -161,6 +172,7 @@ declare module 'tsjson/readers/enum-reader' {
     import { Reader } from 'tsjson/readers/reader.interface';
     import { Types } from 'tsjson/jstypes';
     export class EnumReader<T extends string> extends AbstractReader<T> implements Reader<T> {
+        readonly Type: T;
         expectedType: Types.Type;
         static create(): EnumReader<never>;
         case<S extends string>(s: S): EnumReader<T | S>;
@@ -175,6 +187,7 @@ declare module 'tsjson/readers/object-reader' {
     import { Reader } from 'tsjson/readers/reader.interface';
     import { Types } from 'tsjson/jstypes';
     export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
+        Type: T;
         expectedType: Types.Type;
         isEmpty(): this is EmptyObjectConstructor;
         put<S extends string, U>(s: S & string, reader: Reader<U>): ObjectConstructorInterface<{
@@ -186,6 +199,7 @@ declare module 'tsjson/readers/object-reader' {
         read(obj: any): Result<T, errors.DecodingError>;
     }
     export class EmptyObjectConstructor extends AbstractReader<{}> implements ObjectConstructorInterface<{}> {
+        Type: {};
         expectedType: Types.ObjectType;
         isEmpty(): this is EmptyObjectConstructor;
         put<S extends string, U>(s: S, reader: Reader<U>): ObjectConstructorInterface<{
@@ -199,6 +213,9 @@ declare module 'tsjson/readers/object-reader' {
     export class ObjectConstructor<S extends string, U, Base> implements ObjectConstructorInterface<{
         [s in S]: U;
     } & Base> {
+        Type: {
+            [s in S]: U;
+        } & Base;
         expectedType: Types.Type;
         constructor(property: S, reader: Reader<U>, base: ObjectConstructorInterface<Base>);
         isEmpty(): this is EmptyObjectConstructor;
@@ -226,6 +243,9 @@ declare module 'tsjson/readers/map-reader' {
     export class MapReader<T> implements Reader<{
         [k: string]: T;
     }> {
+        readonly Type: {
+            [k: string]: T;
+        };
         expectedType: Types.Type;
         constructor(valueReader: Reader<T>);
         read(obj: any): Result<{
@@ -241,6 +261,7 @@ declare module 'tsjson/readers/any-reader' {
     import { Types } from 'tsjson/jstypes';
     import { Result } from 'tsjson/result/result';
     export class AnyReader extends AbstractReader<any> implements Reader<any> {
+        readonly Type: any;
         expectedType: Types.AnyType;
         read(obj: any): Result<any, errors.DecodingError>;
     }

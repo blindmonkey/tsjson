@@ -4,6 +4,7 @@ import { AbstractReader } from './abstract-reader';
 import { Reader } from './reader.interface';
 import { Types } from '../jstypes';
 export declare class ArrayReader<T> extends AbstractReader<T[]> implements Reader<T[]> {
+    readonly Type: T[];
     expectedType: Types.ArrayType;
     private reader;
     constructor(reader: Reader<T>);

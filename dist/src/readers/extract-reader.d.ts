@@ -4,6 +4,7 @@ import { AbstractReader } from './abstract-reader';
 import { Reader } from './reader.interface';
 import { Types } from '../jstypes';
 export declare class ExtractReader<T> extends AbstractReader<T> implements Reader<T> {
+    Type: T;
     expectedType: Types.Type;
     private reader;
     private property;

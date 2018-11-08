@@ -15,6 +15,7 @@ export declare namespace TsJson {
     namespace Error {
         type DecodingError = errors.DecodingError;
     }
+    type TypeOf<T extends Reader<any>> = T['Type'];
     const number: PrimitiveReaders.NumberReader;
     const string: PrimitiveReaders.StringReader;
     const boolean: PrimitiveReaders.BooleanReader;
