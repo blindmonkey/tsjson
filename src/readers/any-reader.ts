@@ -6,6 +6,7 @@ import { Types } from '../jstypes';
 import { Result } from '../result/result';
 
 export class AnyReader extends AbstractReader<any> implements Reader<any> {
+  readonly Type!: any;
   expectedType = Types.Any;
   read(obj: any): Result<any, errors.DecodingError> {
     return Result.success(obj);

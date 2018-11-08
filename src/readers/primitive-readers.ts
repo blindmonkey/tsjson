@@ -7,6 +7,7 @@ import { Types } from '../jstypes';
 
 export namespace PrimitiveReaders {
   export class BooleanReader extends AbstractReader<boolean> implements Reader<boolean> {
+    Type!: boolean;
     expectedType = Types.Boolean;
     read(obj: any): Result<boolean, DecodingError> {
       if (typeof obj === 'boolean') {
@@ -20,6 +21,7 @@ export namespace PrimitiveReaders {
   }
 
   export class StringReader extends AbstractReader<string> implements Reader<string> {
+    Type!: string;
     expectedType = Types.String;
     read(obj: any): Result<string, DecodingError> {
       if (typeof obj === 'string') {
@@ -33,6 +35,7 @@ export namespace PrimitiveReaders {
   }
 
   export class NumberReader extends AbstractReader<number> implements Reader<number> {
+    Type!: number;
     expectedType = Types.Number;
     read(obj: any): Result<number, DecodingError> {
       if (typeof obj === 'number') {

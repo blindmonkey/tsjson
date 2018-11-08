@@ -20,6 +20,8 @@ export namespace TsJson {
     export type DecodingError = errors.DecodingError;
   }
 
+  export type TypeOf<T extends Reader<any>> = T['Type'];
+
   export const number = new PrimitiveReaders.NumberReader();
   export const string = new PrimitiveReaders.StringReader();
   export const boolean = new PrimitiveReaders.BooleanReader();

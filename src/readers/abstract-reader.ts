@@ -5,6 +5,7 @@ import { Reader } from './reader.interface';
 import { Types } from '../jstypes';
 
 export abstract class AbstractReader<T> implements Reader<T> {
+  readonly Type!: T;
   abstract expectedType: Types.Type;
   abstract read(obj: any): Result<T, DecodingError>
 
@@ -22,6 +23,7 @@ export abstract class AbstractReader<T> implements Reader<T> {
 }
 
 export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
+  readonly Type!: T;
   expectedType: Types.Type;
   private reader: Reader<T>;
   private default: T;
@@ -47,6 +49,7 @@ function inferOrUnknown(obj: any): string {
 }
 
 export class OrReader<A, B> extends AbstractReader<A|B> implements Reader<A|B> {
+  readonly Type!: A|B;
   expectedType: Types.Type;
   private readerA: Reader<A>;
   private readerB: Reader<B>;
@@ -70,6 +73,7 @@ export class OrReader<A, B> extends AbstractReader<A|B> implements Reader<A|B> {
 }
 
 export class OptionalReader<T> extends DefaultReader<T|null> {
+  readonly Type!: T|null;
   constructor(reader: Reader<T>) {
     super(reader, null);
     this.expectedType = Types.Nullable(reader.expectedType);

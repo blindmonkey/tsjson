@@ -26,6 +26,7 @@ interface EnumReaderInterface<T extends string> {
 }
 
 class EmptyEnumReader implements EnumReaderInterface<never> {
+  readonly Type!: never;
   public expectedType = Types.Union([]);
   public expectedValues: string[] = [];
   isEmpty(): this is EmptyEnumReader { return true; }
@@ -43,6 +44,7 @@ class EmptyEnumReader implements EnumReaderInterface<never> {
 }
 
 class EnumValueReader<T extends string, Base extends string> implements EnumReaderInterface<T|Base> {
+  readonly Type!: T;
   expectedValues: string[];
   private baseReader: EnumReaderInterface<Base>;
   private value: T;
@@ -74,6 +76,7 @@ class EnumValueReader<T extends string, Base extends string> implements EnumRead
 }
 
 export class EnumReader<T extends string> extends AbstractReader<T> implements Reader<T> {
+  readonly Type!: T;
   public expectedType: Types.Type;
   private base: EnumReaderInterface<T>;
   private constructor(base: EnumReaderInterface<T>) {

@@ -8,6 +8,7 @@ import { Types } from '../jstypes';
 
 export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
   // expectedTypes: {[k: string]: string};
+  Type: T;
   expectedType: Types.Type;
   isEmpty(): this is EmptyObjectConstructor;
   put<S extends string, U>(s: S & string, reader: Reader<U>): ObjectConstructorInterface<{[s in S]: U} & T>
@@ -16,6 +17,7 @@ export interface ObjectConstructorInterface<T extends {}> extends Reader<T> {
 }
 
 export class EmptyObjectConstructor extends AbstractReader<{}> implements ObjectConstructorInterface<{}> {
+  Type!: {};
   expectedType = Types.Object({});
   // expectedTypes = {};
   isEmpty(): this is EmptyObjectConstructor { return true; }
@@ -31,6 +33,7 @@ export class EmptyObjectConstructor extends AbstractReader<{}> implements Object
 }
 
 export class ObjectConstructor<S extends string, U, Base> implements ObjectConstructorInterface<{[s in S]: U} & Base> {
+  Type!: {[s in S]: U} & Base;
   expectedType: Types.Type;
   // expectedTypes: {[k: string]: string};
   private property: S;
