@@ -11,6 +11,7 @@ import { AnyReader } from './readers/any-reader';
 export { Reader } from './readers/reader.interface';
 export { AbstractReader } from './readers/abstract-reader';
 export { Types } from './jstypes';
+export { Result } from './result/interface';
 export declare namespace TsJson {
     namespace Error {
         type DecodingError = errors.DecodingError;
