@@ -12,6 +12,8 @@ var abstract_reader_2 = require("./readers/abstract-reader");
 exports.AbstractReader = abstract_reader_2.AbstractReader;
 var jstypes_1 = require("./jstypes");
 exports.Types = jstypes_1.Types;
+var result_1 = require("./result/result");
+exports.Result = result_1.Result;
 var TsJson;
 (function (TsJson) {
     TsJson.number = new primitive_readers_1.PrimitiveReaders.NumberReader();
