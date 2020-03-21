@@ -71,8 +71,13 @@ var ObjectConstructor = /** @class */ (function () {
     ObjectConstructor.prototype.put = function (s, reader) {
         return new ObjectConstructor(s, reader, this);
     };
-    ObjectConstructor.prototype.prop = function (s, reader) {
-        return new ObjectConstructor(s, new extract_reader_1.ExtractReader(s, reader), this);
+    ObjectConstructor.prototype.prop = function (s, internalOrReader, reader) {
+        if (typeof internalOrReader === 'string') {
+            return new ObjectConstructor(s, new extract_reader_1.ExtractReader(internalOrReader, reader), this);
+        }
+        else {
+            return new ObjectConstructor(s, new extract_reader_1.ExtractReader(s, internalOrReader), this);
+        }
     };
     ObjectConstructor.prototype.read = function (obj) {
         var _this = this;

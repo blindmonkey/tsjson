@@ -25,6 +25,9 @@ var AbstractReader = /** @class */ (function () {
     AbstractReader.prototype.or = function (other) {
         return new OrReader(this, other);
     };
+    AbstractReader.prototype.map = function (mapfn) {
+        return new MappingReader(this, mapfn);
+    };
     return AbstractReader;
 }());
 exports.AbstractReader = AbstractReader;
@@ -79,4 +82,19 @@ var OptionalReader = /** @class */ (function (_super) {
     return OptionalReader;
 }(DefaultReader));
 exports.OptionalReader = OptionalReader;
+var MappingReader = /** @class */ (function (_super) {
+    __extends(MappingReader, _super);
+    function MappingReader(reader, mapfn) {
+        var _this = _super.call(this) || this;
+        _this.reader = reader;
+        _this.mapfn = mapfn;
+        _this.expectedType = reader.expectedType;
+        return _this;
+    }
+    MappingReader.prototype.read = function (obj) {
+        return this.reader.read(obj).mapSuccess(this.mapfn);
+    };
+    return MappingReader;
+}(AbstractReader));
+exports.MappingReader = MappingReader;
 //# sourceMappingURL=abstract-reader.js.map

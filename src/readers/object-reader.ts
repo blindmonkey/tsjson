@@ -66,8 +66,14 @@ export class ObjectConstructor<S extends string, U, Base> implements ObjectConst
   put<NewS extends string, NewU>(s: NewS, reader: Reader<NewU>): ObjectConstructorInterface<{[s in NewS]: NewU} & {[s in S]: U} & Base> {
     return new ObjectConstructor<NewS, NewU, {[s in S]: U} & Base>(s, reader, this);
   }
-  prop<NewS extends string, NewU>(s: NewS, reader: Reader<NewU>): ObjectConstructorInterface<{[s in NewS]: NewU} & {[s in S]: U} & Base> {
-    return new ObjectConstructor<NewS, NewU, {[s in S]: U} & Base>(s, new ExtractReader(s, reader), this);
+  prop<NewS extends string, NewU>(s: NewS, internal: string, reader: Reader<NewU>): ObjectConstructorInterface<{[s in NewS]: NewU} & {[s in S]: U} & Base>;
+  prop<NewS extends string, NewU>(s: NewS, reader: Reader<NewU>): ObjectConstructorInterface<{[s in NewS]: NewU} & {[s in S]: U} & Base>;
+  prop<NewS extends string, NewU>(s: NewS, internalOrReader: string|Reader<NewU>, reader?: Reader<NewU>): ObjectConstructorInterface<{[s in NewS]: NewU} & {[s in S]: U} & Base> {
+    if (typeof internalOrReader === 'string') {
+      return new ObjectConstructor<NewS, NewU, {[s in S]: U} & Base>(s, new ExtractReader(internalOrReader, reader!), this);
+    } else {
+      return new ObjectConstructor<NewS, NewU, {[s in S]: U} & Base>(s, new ExtractReader(s, internalOrReader), this);
+    }
   }
   read(obj: any): Result<{[s in S]: U} & Base, errors.DecodingError> {
     return this.base.read(obj).flatMap<{[s in S]: U} & Base, errors.DecodingError>(

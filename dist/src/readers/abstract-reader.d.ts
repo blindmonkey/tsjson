@@ -9,6 +9,7 @@ export declare abstract class AbstractReader<T> implements Reader<T> {
     withDefault(value: T): DefaultReader<T>;
     asOptional(): OptionalReader<T>;
     or<S>(other: Reader<S>): OrReader<T, S>;
+    map<S>(mapfn: (value: T) => S): MappingReader<T, S>;
 }
 export declare class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
     readonly Type: T;
@@ -29,4 +30,12 @@ export declare class OrReader<A, B> extends AbstractReader<A | B> implements Rea
 export declare class OptionalReader<T> extends DefaultReader<T | null> {
     readonly Type: T | null;
     constructor(reader: Reader<T>);
+}
+export declare class MappingReader<From, To> extends AbstractReader<To> {
+    private reader;
+    private mapfn;
+    readonly Type: To;
+    expectedType: Types.Type;
+    constructor(reader: Reader<From>, mapfn: (value: From) => To);
+    read(obj: any): Result<To, DecodingError>;
 }

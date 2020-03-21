@@ -20,6 +20,10 @@ export abstract class AbstractReader<T> implements Reader<T> {
   or<S>(other: Reader<S>): OrReader<T, S> {
     return new OrReader(this, other);
   }
+
+  map<S>(mapfn: (value: T) => S): MappingReader<T, S> {
+    return new MappingReader(this, mapfn);
+  }
 }
 
 export class DefaultReader<T> extends AbstractReader<T> implements Reader<T> {
@@ -77,5 +81,17 @@ export class OptionalReader<T> extends DefaultReader<T|null> {
   constructor(reader: Reader<T>) {
     super(reader, null);
     this.expectedType = Types.Nullable(reader.expectedType);
+  }
+}
+
+export class MappingReader<From, To> extends AbstractReader<To> {
+  readonly Type!: To;
+  expectedType: Types.Type;
+  constructor(private reader: Reader<From>, private mapfn: (value: From) => To) {
+    super();
+    this.expectedType = reader.expectedType;
+  }
+  read(obj: any): Result<To, DecodingError> {
+    return this.reader.read(obj).mapSuccess(this.mapfn);
   }
 }

@@ -44,6 +44,11 @@ export declare class ObjectConstructor<S extends string, U, Base> implements Obj
     } & {
         [s in S]: U;
     } & Base>;
+    prop<NewS extends string, NewU>(s: NewS, internal: string, reader: Reader<NewU>): ObjectConstructorInterface<{
+        [s in NewS]: NewU;
+    } & {
+        [s in S]: U;
+    } & Base>;
     prop<NewS extends string, NewU>(s: NewS, reader: Reader<NewU>): ObjectConstructorInterface<{
         [s in NewS]: NewU;
     } & {
